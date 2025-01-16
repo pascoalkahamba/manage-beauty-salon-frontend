@@ -1,142 +1,206 @@
-// First, create styles file: theme.ts
 "use client";
+import { useForm } from "@mantine/form";
+import { useRouter } from "next/navigation";
+import { notifications } from "@mantine/notifications";
 import {
   TextInput,
   PasswordInput,
-  Select,
-  Button,
-  Paper,
-  Title,
-  Container,
-  Grid,
-  Stack,
-  Image,
   Text,
-  Box,
+  Paper,
+  Group,
+  PaperProps,
+  Button,
+  Divider,
+  Checkbox,
+  Anchor,
+  Stack,
+  Select,
 } from "@mantine/core";
-import { useForm, zodResolver } from "@mantine/form";
-import { z } from "zod";
+import { zodResolver } from "mantine-form-zod-resolver";
+import Link from "next/link";
+import { createAccountEmployeeSchema } from "@/schemas";
+import CustomButton from "@/components/CustomButton";
+import { DataCreateAccountEmployeePropsT } from "@/@types";
 
-const registrationSchema = z
-  .object({
-    name: z.string().min(1, "Nome é obrigatório"),
-    email: z.string().email("Email inválido"),
-    password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
-    confirmPassword: z.string().min(6, "Confirme sua senha"),
-    phone: z.string().min(9, "Número de telefone inválido"),
-    service: z.string().min(1, "Selecione um serviço"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Senhas não conferem",
-    path: ["confirmPassword"],
-  });
+export default function SignUp(props: PaperProps) {
+  const router = useRouter();
 
-type RegistrationForm = z.infer<typeof registrationSchema>;
+  const allServices = [
+    {
+      value: "1",
+      label: "haircut",
+    },
+    {
+      value: "2",
+      label: "haircut",
+    },
+    {
+      value: "3",
+      label: "haircut",
+    },
+  ];
 
-export default function SignUp() {
-  const form = useForm<RegistrationForm>({
+  const form = useForm({
     initialValues: {
-      name: "",
       email: "",
+      username: "",
       password: "",
       confirmPassword: "",
-      phone: "",
-      service: "",
+      cellphone: "",
+      professionId: 0,
+      serviceId: 0,
+      academicLevel: "",
     },
-    validate: zodResolver(registrationSchema),
+    validate: zodResolver(createAccountEmployeeSchema),
   });
 
-  const handleSubmit = (values: RegistrationForm) => {
-    console.log(values);
-    // Handle form submission
-  };
+  async function handleSubmit(values: DataCreateAccountEmployeePropsT) {
+    const {
+      username,
+      email,
+      password,
+      academicLevel,
+      confirmPassword,
+      cellphone,
+      professionId,
+      serviceId,
+    } = values;
+
+    if (password.trim() !== confirmPassword.trim()) {
+      notifications.show({
+        title: "Criação de conta",
+        message: "As senhas devem ser iguais.",
+        position: "top-right",
+        color: "red",
+      });
+      return;
+    }
+    console.log("values", values);
+  }
 
   return (
-    <Container size="lg" py="xl">
-      <Paper shadow="md" p="xl" radius="md">
-        <Grid>
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Box>
-              <Image
-                src="/images/beauty-salon-createAccount.jpg"
-                alt="Salão de beleza"
-                radius="md"
-                h={400}
-                fit="cover"
-              />
-              <Text ta="center" size="lg" fw={500} mt="md">
-                Salão de beleza Nankova em Benguela
-              </Text>
-            </Box>
-          </Grid.Col>
+    <Paper radius="md" p="xl" withBorder {...props} className=" w-[35%]">
+      <Text size="lg" fw={500} className="text-center font-bold">
+        Criar Conta
+      </Text>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <form onSubmit={form.onSubmit(handleSubmit)}>
-              <Stack gap="md">
-                <Title order={2}>Criar Conta</Title>
+      <Divider
+        label="Salão de beleza Nankova em Benguela"
+        labelPosition="center"
+        my="lg"
+      />
 
-                <TextInput
-                  required
-                  label="Nome"
-                  placeholder="Seu nome"
-                  {...form.getInputProps("name")}
-                />
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack>
+          <TextInput
+            label="Nome"
+            required
+            placeholder="Seu nome"
+            value={form.values.username}
+            onChange={(event) =>
+              form.setFieldValue("username", event.currentTarget.value)
+            }
+            radius="md"
+            error={form.errors.username}
+          />
 
-                <TextInput
-                  required
-                  label="Email"
-                  placeholder="seu@email.com"
-                  {...form.getInputProps("email")}
-                />
+          <TextInput
+            required
+            label="Email"
+            placeholder="pascoalkahamba25@gmail.com"
+            value={form.values.email}
+            onChange={(event) =>
+              form.setFieldValue("email", event.currentTarget.value)
+            }
+            radius="md"
+            error={form.errors.email}
+          />
+          <div className="w-full flex items-center gap-2">
+            <PasswordInput
+              required
+              label="Senha"
+              placeholder="Sua senha"
+              className="w-[50%]"
+              value={form.values.password}
+              onChange={(event) =>
+                form.setFieldValue("password", event.currentTarget.value)
+              }
+              radius="md"
+              error={form.errors.password}
+            />
 
-                <PasswordInput
-                  required
-                  label="Senha"
-                  placeholder="Sua senha"
-                  {...form.getInputProps("password")}
-                />
+            <PasswordInput
+              required
+              label="Confirma a senha"
+              placeholder="Sua senha"
+              className="w-[50%]"
+              value={form.values.confirmPassword}
+              onChange={(event) =>
+                form.setFieldValue("confirmPassword", event.currentTarget.value)
+              }
+              radius="md"
+              error={form.errors.confirmPassword}
+            />
+          </div>
+          <TextInput
+            required
+            type="number"
+            label="Número de telefone"
+            placeholder="Seu numero de telefone"
+            value={form.values.cellphone}
+            onChange={(event) =>
+              form.setFieldValue("cellphone", event.currentTarget.value)
+            }
+            radius="md"
+            error={form.errors.cellphone}
+          />
 
-                <PasswordInput
-                  required
-                  label="Confirma a senha"
-                  placeholder="Confirme sua senha"
-                  {...form.getInputProps("confirmPassword")}
-                />
+          <Select
+            required
+            label="Selecione serviço desejado"
+            placeholder="Escolha um profissão"
+            value={`${form.values.serviceId}`}
+            className="self-start w-full"
+            onChange={(value) => form.setFieldValue("serviceId", Number(value))}
+            data={allServices}
+            withAsterisk
+            clearable
+            error={form.errors.serviceId}
+            searchable
+          />
+          <Select
+            required
+            label="Selecione a profissão desejada"
+            placeholder="Escolha um profissão"
+            value={`${form.values.professionId}`}
+            className="self-start w-full"
+            onChange={(value) =>
+              form.setFieldValue("professionId", Number(value))
+            }
+            data={allServices}
+            withAsterisk
+            clearable
+            error={form.errors.professionId}
+            searchable
+          />
 
-                <TextInput
-                  required
-                  label="Número de telefone"
-                  placeholder="Seu número de telefone"
-                  {...form.getInputProps("phone")}
-                />
-
-                <Select
-                  required
-                  label="Selecione serviço desejado"
-                  placeholder="Escolha um curso"
-                  data={[
-                    { value: "corte", label: "Corte de Cabelo" },
-                    { value: "coloracao", label: "Coloração" },
-                    { value: "manicure", label: "Manicure" },
-                    { value: "pedicure", label: "Pedicure" },
-                  ]}
-                  {...form.getInputProps("service")}
-                />
-
-                <Button type="submit" fullWidth mt="xl">
-                  Cadastrar
-                </Button>
-
-                <Box ta="center">
-                  <Text size="sm" mb="xs">
-                    Já tenho uma conta? <Button variant="subtle">Entrar</Button>
-                  </Text>
-                </Box>
-              </Stack>
-            </form>
-          </Grid.Col>
-        </Grid>
-      </Paper>
-    </Container>
+          <Group justify="space-between" mt="xl">
+            <Link href="/signin">
+              <Anchor component="button" type="button" c="dimmed" size="xs">
+                Já tenho uma conta? Entrar
+              </Anchor>
+            </Link>
+            <CustomButton
+              size="sm"
+              radius="xl"
+              type="submit"
+              target="Cadastrar"
+              targetPedding="Cadastrando"
+              isPending={false}
+            />
+          </Group>
+        </Stack>
+      </form>
+    </Paper>
   );
 }
