@@ -1,6 +1,9 @@
-import { createAccountEmployeeSchema } from "@/schemas";
+import { createAccountSchema, loginSchema } from "@/schemas";
 import { z as zod } from "zod";
 
-export type DataCreateAccountEmployeePropsT = zod.infer<
-  typeof createAccountEmployeeSchema
->;
+export type TDataCreateAccountProps = zod.infer<typeof createAccountSchema>;
+
+export type TDataLoginProps = zod.infer<typeof loginSchema>;
+export type TRole = "EMPLOYEE" | "CLIENT" | "ADMIN";
+
+export type TTypeButton = "button" | "submit" | "reset" | undefined;

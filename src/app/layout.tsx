@@ -1,15 +1,9 @@
-import "@mantine/core/styles.css";
-import "@/app/main.css";
-import "@mantine/carousel/styles.css";
-import "@mantine/notifications/styles.css";
-import "aos/dist/aos.css";
 // import "@mantine/dropzone/styles.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { MantineProvider, ColorSchemeScript } from "@mantine/core";
+import { ColorSchemeScript } from "@mantine/core";
 import Providers from "@/utils/provider";
-import { Notifications } from "@mantine/notifications";
-import { ModalsProvider } from "@mantine/modals";
+import ThemeProvider from "@/utils/themeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,16 +20,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="dark" />
       </head>
 
       <body className={inter.className}>
-        <MantineProvider>
-          <ModalsProvider labels={{ confirm: "Submit", cancel: "Cancel" }}>
-            <Notifications />
-            <Providers>{children}</Providers>
-          </ModalsProvider>
-        </MantineProvider>
+        <ThemeProvider>
+          <Providers>{children}</Providers>
+        </ThemeProvider>
       </body>
     </html>
   );

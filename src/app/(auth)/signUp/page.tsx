@@ -1,6 +1,5 @@
 import SignUp from "@/components/SignUp";
 import { Metadata } from "next";
-import { cookies } from "next/headers";
 import Image from "next/image";
 
 export const metadata: Metadata = {
@@ -9,8 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default function CreatedAccount() {
-  const cookiesStore = cookies();
-
   return (
     <section className="w-full h-svh flex p-5 justify-center">
       <div
@@ -20,7 +17,7 @@ export default function CreatedAccount() {
       >
         <div className="w-[70%] rounded-2xl">
           <Image
-            src="/img/beauty-salon-createAccount.jpg"
+            src="/images/beauty-salon-createAccount.jpg"
             width={300}
             height={300}
             alt="create account picture"

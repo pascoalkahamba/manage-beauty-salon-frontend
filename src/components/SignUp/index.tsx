@@ -9,7 +9,6 @@ import {
   Paper,
   Group,
   PaperProps,
-  Button,
   Divider,
   Checkbox,
   Anchor,
@@ -18,11 +17,27 @@ import {
 } from "@mantine/core";
 import { zodResolver } from "mantine-form-zod-resolver";
 import Link from "next/link";
-import { createAccountEmployeeSchema } from "@/schemas";
+import { createAccountSchema } from "@/schemas";
 import CustomButton from "@/components/CustomButton";
-import { DataCreateAccountEmployeePropsT } from "@/@types";
+import { TDataCreateAccountProps } from "@/@types";
+import { MultiSelect } from "@mantine/core";
+import { useMutation } from "@tanstack/react-query";
+import { ICreateAccount } from "@/interfaces";
+import { create } from "domain";
+import { createAccount } from "@/servers";
 
 export default function SignUp(props: PaperProps) {
+  const { mutate, isPending, isError } = useMutation({
+    onMutate: (data: ICreateAccount) => createAccount(data),
+    onSuccess: () => {
+      notifications.show({
+        title: "Criação de conta",
+        message: "Sua conta foi criada com sucesso.",
+        position: "top-right",
+      });
+    },
+  });
+
   const router = useRouter();
 
   const allServices = [
@@ -43,6 +58,7 @@ export default function SignUp(props: PaperProps) {
   const form = useForm({
     initialValues: {
       email: "",
+      terms: false,
       username: "",
       password: "",
       confirmPassword: "",
@@ -51,10 +67,10 @@ export default function SignUp(props: PaperProps) {
       serviceId: 0,
       academicLevel: "",
     },
-    validate: zodResolver(createAccountEmployeeSchema),
+    validate: zodResolver(createAccountSchema),
   });
 
-  async function handleSubmit(values: DataCreateAccountEmployeePropsT) {
+  async function handleSubmit(values: TDataCreateAccountProps) {
     const {
       username,
       email,
@@ -62,8 +78,8 @@ export default function SignUp(props: PaperProps) {
       academicLevel,
       confirmPassword,
       cellphone,
-      professionId,
-      serviceId,
+      servicesIds,
+      categoriesIds,
     } = values;
 
     if (password.trim() !== confirmPassword.trim()) {
@@ -103,7 +119,6 @@ export default function SignUp(props: PaperProps) {
             radius="md"
             error={form.errors.username}
           />
-
           <TextInput
             required
             label="Email"
@@ -154,42 +169,29 @@ export default function SignUp(props: PaperProps) {
             radius="md"
             error={form.errors.cellphone}
           />
+          {!form.values.terms && (
+            <MultiSelect
+              label="Escolhe suas categorias"
+              placeholder="Escohe suas categorias"
+              data={allServices}
+            />
+          )}
+          {form.values.terms && (
+            <MultiSelect
+              label="Escolhe seus serviços"
+              placeholder="Escolhe seus serviços"
+              data={allServices}
+            />
+          )}
+          <Group justify="space-between" mt="xs">
+            <Checkbox
+              label="Você é um funcionário"
+              checked={form.values.terms}
+              onChange={(event) =>
+                form.setFieldValue("terms", event.currentTarget.checked)
+              }
+            />
 
-          <Select
-            required
-            label="Selecione serviço desejado"
-            placeholder="Escolha um profissão"
-            value={`${form.values.serviceId}`}
-            className="self-start w-full"
-            onChange={(value) => form.setFieldValue("serviceId", Number(value))}
-            data={allServices}
-            withAsterisk
-            clearable
-            error={form.errors.serviceId}
-            searchable
-          />
-          <Select
-            required
-            label="Selecione a profissão desejada"
-            placeholder="Escolha um profissão"
-            value={`${form.values.professionId}`}
-            className="self-start w-full"
-            onChange={(value) =>
-              form.setFieldValue("professionId", Number(value))
-            }
-            data={allServices}
-            withAsterisk
-            clearable
-            error={form.errors.professionId}
-            searchable
-          />
-
-          <Group justify="space-between" mt="xl">
-            <Link href="/signin">
-              <Anchor component="button" type="button" c="dimmed" size="xs">
-                Já tenho uma conta? Entrar
-              </Anchor>
-            </Link>
             <CustomButton
               size="sm"
               radius="xl"
@@ -199,6 +201,11 @@ export default function SignUp(props: PaperProps) {
               isPending={false}
             />
           </Group>
+          <Link href="/signIn">
+            <Anchor component="button" type="button" c="dimmed" size="xs">
+              Já tenho uma conta? Entrar
+            </Anchor>
+          </Link>
         </Stack>
       </form>
     </Paper>
