@@ -20,6 +20,7 @@ import {
 
 export async function createAccount(userInfo: ICreateAccount) {
   const { role } = userInfo;
+  console.log("userInfo", userInfo);
 
   const responses = await axiosApp.post(
     role === "EMPLOYEE" ? CREATEACCOUNTEMPLOYEEROUTE : CREATEACCOUNTCLIENTROUTE,

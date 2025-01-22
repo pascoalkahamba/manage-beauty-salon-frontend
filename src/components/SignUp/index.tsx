@@ -50,9 +50,26 @@ export default function SignUp(props: PaperProps) {
     queryKey: ["getAllAcademicLevels"],
     queryFn: getAllAcademicLevels,
   });
+
+  const form = useForm({
+    initialValues: {
+      email: "",
+      terms: false,
+      username: "",
+      password: "",
+      confirmPassword: "",
+      categoriesIds: [],
+      servicesIds: [],
+      cellphone: "",
+      validationCode: "",
+      academicLevelId: "",
+    },
+    validate: zodResolver(createAccountSchema),
+  });
+
   const router = useRouter();
   const { mutate, isPending } = useMutation({
-    onMutate: (data: ICreateAccount) => createAccount(data),
+    mutationFn: (data: ICreateAccount) => createAccount(data),
     onSuccess: () => {
       notifications.show({
         title: "Criação de conta",
@@ -60,6 +77,8 @@ export default function SignUp(props: PaperProps) {
         position: "top-right",
         color: "blue",
       });
+      router.push("/signIn");
+      form.reset();
     },
     onError: () => {
       notifications.show({
@@ -71,42 +90,30 @@ export default function SignUp(props: PaperProps) {
     },
   });
 
-  const form = useForm({
-    initialValues: {
-      email: "",
-      terms: false,
-      username: "",
-      password: "",
-      confirmPassword: "",
-      categoriesIds: [0],
-      servicesIds: [0],
-      cellphone: "",
-      serviceId: 0,
-      validationCode: "",
-      academicLevelId: "",
-    },
-    validate: zodResolver(createAccountSchema),
-  });
-
   const allServices = useMemo(() => {
-    return serviceData?.map((service) => ({
-      value: `${service.id}`,
-      label: service.name,
-    }));
+    return (
+      serviceData?.map((service) => ({
+        value: `${service.id}`,
+        label: service.name,
+      })) || []
+    );
   }, [serviceData]);
 
   const allCategories = useMemo(() => {
-    return categoryData?.map((category) => ({
-      value: `${category.id}`,
-      label: category.name,
-    }));
+    return (
+      categoryData?.map((category) => ({
+        value: `${category.id}`,
+        label: category.name,
+      })) || []
+    );
   }, [categoryData]);
-
   const allAcademicLevels = useMemo(() => {
-    return academicLevelData?.map((academicLevel) => ({
-      value: `${academicLevel.id}`,
-      label: academicLevel.name,
-    }));
+    return (
+      academicLevelData?.map((academicLevel) => ({
+        value: `${academicLevel.id}`,
+        label: academicLevel.name,
+      })) || []
+    );
   }, [academicLevelData]);
 
   if (serviceIsError || categoryIsError || academicLevelIsError) {
@@ -133,14 +140,13 @@ export default function SignUp(props: PaperProps) {
       username,
       email,
       password,
-      academicLevelId,
+      academicLevelId: Number(academicLevelId),
       validationCode,
       role: values.terms ? "EMPLOYEE" : "CLIENT",
       cellphone,
       servicesIds,
       categoriesIds,
     });
-    router.push("/dashboard");
     console.log("values", values);
   }
 
@@ -235,23 +241,37 @@ export default function SignUp(props: PaperProps) {
           {!form.values.terms && (
             <MultiSelect
               label="Escolhe suas categorias"
+              data={allCategories?.map((category) => ({
+                value: category.value.toString(),
+                label: category.label,
+              }))}
               placeholder="Escohe suas categorias"
-              value={form.values.categoriesIds}
-              onChange={(value) => form.setFieldValue("categoriesIds", value)}
-              data={allCategories}
+              value={form.values.categoriesIds.map((id) => id.toString())}
+              nothingFoundMessage="Nenhuma categoria encontrada"
+              onChange={(value) =>
+                form.setFieldValue("categoriesIds", value.map(Number))
+              }
               clearable
+              required
               searchable
             />
           )}
           {form.values.terms && (
             <MultiSelect
               label="Escolhe seus serviços"
+              data={allServices?.map((service) => ({
+                value: service.value.toString(),
+                label: service.label,
+              }))}
               placeholder="Escolhe seus serviços"
-              value={form.values.servicesIds}
-              onChange={(value) => form.setFieldValue("servicesIds", value)}
-              data={allServices}
+              value={form.values.servicesIds.map((id) => id.toString())}
+              onChange={(value) =>
+                form.setFieldValue("servicesIds", value.map(Number))
+              }
+              nothingFoundMessage="Nenhum serviço encontrado"
               clearable
               searchable
+              required
             />
           )}
           {form.values.terms && (
@@ -260,6 +280,7 @@ export default function SignUp(props: PaperProps) {
               placeholder="Escolhe seu nível acadêmico"
               data={allAcademicLevels}
               value={form.values.academicLevelId}
+              nothingFoundMessage="Nenhum nível acadêmico encontrado"
               onChange={(value) =>
                 form.setFieldValue("academicLevelId", `${value}`)
               }

@@ -1,6 +1,6 @@
 // employee routes
 const SIGNINEMPLOYEEROUTE = "/employee/login";
-const CREATEACCOUNTEMPLOYEEROUTE = "/employeer/create";
+const CREATEACCOUNTEMPLOYEEROUTE = "/employee/create";
 
 // clients routes
 const CREATEACCOUNTCLIENTROUTE = "/client/create";

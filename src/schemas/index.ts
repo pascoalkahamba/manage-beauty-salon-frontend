@@ -7,7 +7,10 @@ const createAccountSchema = zod
     email: zod.string().email("Email inválido"),
     password: zod.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
     confirmPassword: zod.string().min(6, "Confirme sua senha"),
-    cellphone: zod.string().min(9, "Número de telefone inválido"),
+    cellphone: zod
+      .string()
+      .min(9, "Número de telefone inválido")
+      .max(9, "Número de telefone inválido"),
     validationCode: zod
       .string()
       .regex(
