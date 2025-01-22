@@ -34,3 +34,25 @@ export interface ILoginResponse {
   };
   token: string;
 }
+
+export interface IAcademicLevel {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export interface ICategory {
+  id: number;
+  name: string;
+  description: string;
+  services: IService[];
+}
+
+export interface IService {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  categoryId: number;
+  category: ICategory;
+}

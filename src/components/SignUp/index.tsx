@@ -23,7 +23,6 @@ import { TDataCreateAccountProps } from "@/@types";
 import { MultiSelect } from "@mantine/core";
 import { useMutation } from "@tanstack/react-query";
 import { ICreateAccount } from "@/interfaces";
-import { create } from "domain";
 import { createAccount } from "@/servers";
 
 export default function SignUp(props: PaperProps) {
@@ -33,6 +32,13 @@ export default function SignUp(props: PaperProps) {
       notifications.show({
         title: "Criação de conta",
         message: "Sua conta foi criada com sucesso.",
+        position: "top-right",
+      });
+    },
+    onError: () => {
+      notifications.show({
+        title: "Criação de conta",
+        message: "Erro ao criar conta.",
         position: "top-right",
       });
     },
@@ -82,15 +88,25 @@ export default function SignUp(props: PaperProps) {
       categoriesIds,
     } = values;
 
-    if (password.trim() !== confirmPassword.trim()) {
-      notifications.show({
-        title: "Criação de conta",
-        message: "As senhas devem ser iguais.",
-        position: "top-right",
-        color: "red",
-      });
-      return;
-    }
+    mutate({
+      username,
+      email,
+      password,
+      academicLevel,
+      role: values.terms ? "EMPLOYEE" : "CLIENT",
+      cellphone,
+      servicesIds,
+      categoriesIds,
+    });
+    // if (password.trim() !== confirmPassword.trim()) {
+    //   notifications.show({
+    //     title: "Criação de conta",
+    //     message: "As senhas devem ser iguais.",
+    //     position: "top-right",
+    //     color: "red",
+    //   });
+    //   return;
+    // }
     console.log("values", values);
   }
 
@@ -198,7 +214,7 @@ export default function SignUp(props: PaperProps) {
               type="submit"
               target="Cadastrar"
               targetPedding="Cadastrando"
-              isPending={false}
+              isPending={isPending}
             />
           </Group>
           <Link href="/signIn">
