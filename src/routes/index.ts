@@ -10,7 +10,7 @@ const SIGNINCLIENTROUTE = "/client/login";
 const GETALLCATEGORIESROUTE = "/category/getAllCategories";
 
 // services routes
-const GETALLSERVICESROUTE = "/servic/getAllServices";
+const GETALLSERVICESROUTE = "/service/getAllServices";
 
 // academic level routes
 const GETALLACADEMICLEVELSROUTE = "/academicLevel/getAllAcademicLevels";

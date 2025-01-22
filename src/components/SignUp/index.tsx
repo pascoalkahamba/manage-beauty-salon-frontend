@@ -21,18 +21,44 @@ import { createAccountSchema } from "@/schemas";
 import CustomButton from "@/components/CustomButton";
 import { TDataCreateAccountProps } from "@/@types";
 import { MultiSelect } from "@mantine/core";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ICreateAccount } from "@/interfaces";
-import { createAccount } from "@/servers";
+import {
+  createAccount,
+  getAllAcademicLevels,
+  getAllCategories,
+  getAllServices,
+} from "@/servers";
+import { useMemo } from "react";
 
 export default function SignUp(props: PaperProps) {
-  const { mutate, isPending, isError } = useMutation({
+  const { data: serviceData, isError: serviceIsError } = useQuery({
+    queryKey: ["getAllServices"],
+    queryFn: getAllServices,
+  });
+
+  const {
+    data: categoryData,
+
+    isError: categoryIsError,
+  } = useQuery({
+    queryKey: ["getAllCategories"],
+    queryFn: getAllCategories,
+  });
+
+  const { data: academicLevelData, isError: academicLevelIsError } = useQuery({
+    queryKey: ["getAllAcademicLevels"],
+    queryFn: getAllAcademicLevels,
+  });
+  const router = useRouter();
+  const { mutate, isPending } = useMutation({
     onMutate: (data: ICreateAccount) => createAccount(data),
     onSuccess: () => {
       notifications.show({
         title: "Criação de conta",
         message: "Sua conta foi criada com sucesso.",
         position: "top-right",
+        color: "blue",
       });
     },
     onError: () => {
@@ -40,26 +66,10 @@ export default function SignUp(props: PaperProps) {
         title: "Criação de conta",
         message: "Erro ao criar conta.",
         position: "top-right",
+        color: "red",
       });
     },
   });
-
-  const router = useRouter();
-
-  const allServices = [
-    {
-      value: "1",
-      label: "haircut",
-    },
-    {
-      value: "2",
-      label: "haircut",
-    },
-    {
-      value: "3",
-      label: "haircut",
-    },
-  ];
 
   const form = useForm({
     initialValues: {
@@ -68,21 +78,52 @@ export default function SignUp(props: PaperProps) {
       username: "",
       password: "",
       confirmPassword: "",
+      categoriesIds: [0],
+      servicesIds: [0],
       cellphone: "",
-      professionId: 0,
       serviceId: 0,
-      academicLevel: "",
+      validationCode: "",
+      academicLevelId: "",
     },
     validate: zodResolver(createAccountSchema),
   });
+
+  const allServices = useMemo(() => {
+    return serviceData?.map((service) => ({
+      value: `${service.id}`,
+      label: service.name,
+    }));
+  }, [serviceData]);
+
+  const allCategories = useMemo(() => {
+    return categoryData?.map((category) => ({
+      value: `${category.id}`,
+      label: category.name,
+    }));
+  }, [categoryData]);
+
+  const allAcademicLevels = useMemo(() => {
+    return academicLevelData?.map((academicLevel) => ({
+      value: `${academicLevel.id}`,
+      label: academicLevel.name,
+    }));
+  }, [academicLevelData]);
+
+  if (serviceIsError || categoryIsError || academicLevelIsError) {
+    return (
+      <p className="p-3 font-bold text-center">
+        Algo deu errado tente novamente:
+      </p>
+    );
+  }
 
   async function handleSubmit(values: TDataCreateAccountProps) {
     const {
       username,
       email,
       password,
-      academicLevel,
-      confirmPassword,
+      academicLevelId,
+      validationCode,
       cellphone,
       servicesIds,
       categoriesIds,
@@ -92,21 +133,14 @@ export default function SignUp(props: PaperProps) {
       username,
       email,
       password,
-      academicLevel,
+      academicLevelId,
+      validationCode,
       role: values.terms ? "EMPLOYEE" : "CLIENT",
       cellphone,
       servicesIds,
       categoriesIds,
     });
-    // if (password.trim() !== confirmPassword.trim()) {
-    //   notifications.show({
-    //     title: "Criação de conta",
-    //     message: "As senhas devem ser iguais.",
-    //     position: "top-right",
-    //     color: "red",
-    //   });
-    //   return;
-    // }
+    router.push("/dashboard");
     console.log("values", values);
   }
 
@@ -123,7 +157,7 @@ export default function SignUp(props: PaperProps) {
       />
 
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack>
+        <Stack className="flex flex-col gap-3 w-full">
           <TextInput
             label="Nome"
             required
@@ -185,21 +219,53 @@ export default function SignUp(props: PaperProps) {
             radius="md"
             error={form.errors.cellphone}
           />
+          {form.values.terms && (
+            <TextInput
+              label="Seu codigo de acesso"
+              required
+              placeholder="Seu codigo de acesso"
+              value={form.values.validationCode}
+              onChange={(event) =>
+                form.setFieldValue("validationCode", event.currentTarget.value)
+              }
+              radius="md"
+              error={form.errors.validationCode}
+            />
+          )}
           {!form.values.terms && (
             <MultiSelect
               label="Escolhe suas categorias"
               placeholder="Escohe suas categorias"
-              data={allServices}
+              value={form.values.categoriesIds}
+              onChange={(value) => form.setFieldValue("categoriesIds", value)}
+              data={allCategories}
+              clearable
+              searchable
             />
           )}
           {form.values.terms && (
             <MultiSelect
               label="Escolhe seus serviços"
               placeholder="Escolhe seus serviços"
+              value={form.values.servicesIds}
+              onChange={(value) => form.setFieldValue("servicesIds", value)}
               data={allServices}
+              clearable
+              searchable
             />
           )}
-          <Group justify="space-between" mt="xs">
+          {form.values.terms && (
+            <Select
+              label="Escolhe seu nível acadêmico"
+              placeholder="Escolhe seu nível acadêmico"
+              data={allAcademicLevels}
+              value={form.values.academicLevelId}
+              onChange={(value) =>
+                form.setFieldValue("academicLevelId", `${value}`)
+              }
+            />
+          )}
+          <Group justify="space-between">
             <Checkbox
               label="Você é um funcionário"
               checked={form.values.terms}
@@ -218,7 +284,13 @@ export default function SignUp(props: PaperProps) {
             />
           </Group>
           <Link href="/signIn">
-            <Anchor component="button" type="button" c="dimmed" size="xs">
+            <Anchor
+              component="button"
+              type="button"
+              c="dimmed"
+              size="xs"
+              className={`${form.values.terms ? "mb-5" : ""}`}
+            >
               Já tenho uma conta? Entrar
             </Anchor>
           </Link>

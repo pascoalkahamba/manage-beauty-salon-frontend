@@ -7,7 +7,8 @@ export interface ICreateAccount {
   cellphone: string;
   role: TRole;
   servicesIds?: number[];
-  academicLevel?: string;
+  validationCode?: string;
+  academicLevelId?: string;
   categoriesIds?: number[];
 }
 
@@ -30,7 +31,7 @@ export interface ILoginResponse {
     email: string;
     role: TRole;
     cellphone: string;
-    academicLevel?: string;
+    academicLevelId?: string;
   };
   token: string;
 }
