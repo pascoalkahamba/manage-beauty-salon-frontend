@@ -19,7 +19,7 @@ export interface ICreateAccountResponse {
 }
 
 export interface ILogin {
-  username: string;
+  email: string;
   password: string;
   role: TRole;
 }
@@ -30,8 +30,6 @@ export interface ILoginResponse {
     username: string;
     email: string;
     role: TRole;
-    cellphone: string;
-    academicLevelId?: number;
   };
   token: string;
 }

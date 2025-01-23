@@ -33,9 +33,12 @@ export async function createAccount(userInfo: ICreateAccount) {
 
 export async function login(userInfo: ILogin) {
   const { role } = userInfo;
+  console.log("userInfo route", userInfo);
 
   const response = await axiosApp.post(
-    role === "EMPLOYEE" ? SIGNINEMPLOYEEROUTE : SIGNINCLIENTROUTE,
+    role === "EMPLOYEE" || role === "MANAGER"
+      ? SIGNINEMPLOYEEROUTE
+      : SIGNINCLIENTROUTE,
     userInfo
   );
 

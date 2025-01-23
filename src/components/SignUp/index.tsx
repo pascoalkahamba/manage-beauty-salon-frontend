@@ -32,6 +32,8 @@ import {
 import { useMemo } from "react";
 
 export default function SignUp(props: PaperProps) {
+  // Inside your SignUp component
+
   const { data: serviceData, isError: serviceIsError } = useQuery({
     queryKey: ["getAllServices"],
     queryFn: getAllServices,
@@ -58,11 +60,11 @@ export default function SignUp(props: PaperProps) {
       username: "",
       password: "",
       confirmPassword: "",
-      categoriesIds: [],
-      servicesIds: [],
+      categoriesIds: null,
+      servicesIds: null,
       cellphone: "",
-      validationCode: "",
-      academicLevelId: "",
+      validationCode: null,
+      academicLevelId: null,
     },
     validate: zodResolver(createAccountSchema),
   });
@@ -246,7 +248,7 @@ export default function SignUp(props: PaperProps) {
                 label: category.label,
               }))}
               placeholder="Escohe suas categorias"
-              value={form.values.categoriesIds.map((id) => id.toString())}
+              value={form.values.categoriesIds?.map((id) => id.toString())}
               nothingFoundMessage="Nenhuma categoria encontrada"
               onChange={(value) =>
                 form.setFieldValue("categoriesIds", value.map(Number))
@@ -264,7 +266,7 @@ export default function SignUp(props: PaperProps) {
                 label: service.label,
               }))}
               placeholder="Escolhe seus serviços"
-              value={form.values.servicesIds.map((id) => id.toString())}
+              value={form.values.servicesIds?.map((id) => id.toString())}
               onChange={(value) =>
                 form.setFieldValue("servicesIds", value.map(Number))
               }

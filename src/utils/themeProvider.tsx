@@ -8,11 +8,11 @@ import { Notifications } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
 import { MantineProvider } from "@mantine/core";
 
-export default function ThemeProvider({
-  children,
-}: {
+interface ThemeProvideerProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function ThemeProvider({ children }: ThemeProvideerProps) {
   return (
     <MantineProvider defaultColorScheme="dark">
       <ModalsProvider labels={{ confirm: "Submit", cancel: "Cancel" }}>

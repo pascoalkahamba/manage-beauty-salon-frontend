@@ -1,11 +1,16 @@
 import SignUp from "@/components/SignUp";
 import { Metadata } from "next";
 import Image from "next/image";
+// import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
   title: "Salão de Beleza | Criar Conta",
   description: "Page to user creates your account on the website.",
 };
+
+// const SignUp = dynamic(() => import("@/components/SignUp"), {
+//   ssr: false,
+// });
 
 export default function CreatedAccount() {
   return (

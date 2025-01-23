@@ -3,6 +3,9 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@mantine/core", "@mantine/hooks"],
   },
+  compiler: {
+    emotion: true,
+  },
   images: {
     remotePatterns: [
       {

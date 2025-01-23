@@ -17,20 +17,24 @@ const createAccountSchema = zod
         EMPLOYEE_CODE_REGEX,
         "codigo inválido, deve conter 8 digitos um numero e uma letra e um caracter especial (@$!%*#?&)."
       )
-      .optional(),
+      .optional()
+      .nullable(),
     servicesIds: zod
       .number({ message: "Selecione um serviço" })
       .array()
-      .optional(),
+      .optional()
+      .nullable(),
     categoriesIds: zod
       .number({ message: "Selecione uma categoria" })
       .array()
-      .optional(),
+      .optional()
+      .nullable(),
     terms: zod.boolean(),
     academicLevelId: zod
       .string()
       .min(1, "Selecione um nível de escolaridade")
-      .optional(),
+      .optional()
+      .nullable(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Senhas não conferem",
@@ -39,6 +43,7 @@ const createAccountSchema = zod
 
 const loginSchema = zod.object({
   email: zod.string().email("Email inválido"),
+  terms: zod.boolean(),
   password: zod.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
 });
 
