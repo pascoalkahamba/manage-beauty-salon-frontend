@@ -35,7 +35,6 @@ export default function SignIn(props: PaperProps) {
         color: "green",
         position: "top-right",
       });
-      console.log("result", result);
       localStorage.setItem("userInfo", JSON.stringify(result?.user));
       localStorage.setItem("token", JSON.stringify(result?.token));
       router.push("/dashboard");
@@ -60,7 +59,6 @@ export default function SignIn(props: PaperProps) {
   });
 
   const handleSubmit = (values: TDataLoginProps) => {
-    console.log("values", values);
     const admin =
       values.email === "pascoalkahamba25@gmail.com" ||
       values.email === "PascoalKahamba25@gmail.com";

@@ -1,7 +1,11 @@
+import CardsCarousel from "@/components/CardsCarousel";
+import DashboardChild from "@/components/DashboardChild";
+
 export default function Dashboard() {
   return (
-    <div>
-      <h1>Dashboard</h1>
-    </div>
+    <section className="flex flex-col gap-3 justify-center items-center w-full px-3">
+      <CardsCarousel />
+      <DashboardChild />
+    </section>
   );
 }
