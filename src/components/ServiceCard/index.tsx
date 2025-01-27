@@ -1,44 +1,36 @@
 "use client";
 
-import {
-  IconGasStation,
-  IconGauge,
-  IconManualGearbox,
-  IconUsers,
-} from "@tabler/icons-react";
-import { Badge, Button, Card, Center, Group, Text } from "@mantine/core";
+import { Badge, Button, Card, Group, Text } from "@mantine/core";
 import Image from "next/image";
 import classes from "@/components/ServiceCard/styles.module.css";
-
-const mockdata = [
-  { label: "4 passengers", icon: IconUsers },
-  { label: "100 km/h in 4 seconds", icon: IconGauge },
-  { label: "Automatic gearbox", icon: IconManualGearbox },
-  { label: "Electric", icon: IconGasStation },
-];
+import { ICategory, IPicture } from "@/interfaces";
 
 interface ServiceCardProps {
-  height: string;
+  description: string;
+  price: number;
+  image: IPicture;
+  name: string;
+  duration: number;
+  category: ICategory;
 }
 
-export default function ServiceCard() {
-  const features = mockdata.map((feature) => (
-    <Center key={feature.label}>
-      <feature.icon size={16} className={classes.icon} stroke={1.5} />
-      <Text size="xs">{feature.label}</Text>
-    </Center>
-  ));
-
+export default function ServiceCard({
+  name,
+  description,
+  price,
+  image,
+  duration,
+}: ServiceCardProps) {
   return (
     <Card
       withBorder
       radius="md"
-      className={`${classes.card} w-[25%] bg-white rounded-lg shadow-md p-4"`}
+      className={`${classes.card} flex-grow flex-shrink basis-80 mb-4`}
     >
       <Card.Section className={classes.imageSection}>
         <Image
           src="/images/haircutMan.jpg"
-          alt="Corte Americano"
+          alt=" {name}"
           width={770}
           height={100}
         />
@@ -46,9 +38,9 @@ export default function ServiceCard() {
 
       <Group justify="space-between" mt="md">
         <div>
-          <Text fw={500}>Corte Americano</Text>
+          <Text fw={500}> {name}</Text>
           <Text fz="xs" c="dimmed">
-            Corte de cabelo moderno e personalizado.
+            {description}{" "}
           </Text>
         </div>
         <Badge variant="outline">Categoria de cortes de cabelo</Badge>
@@ -56,7 +48,7 @@ export default function ServiceCard() {
 
       <Card.Section className={classes.section} mt="md">
         <Text fz="sm" c="dimmed" className={classes.label}>
-          Duração: 1 hora
+          Duração: {duration} hora
         </Text>
       </Card.Section>
 
@@ -64,7 +56,7 @@ export default function ServiceCard() {
         <Group gap={30}>
           <div>
             <Text fz="xl" fw={700} style={{ lineHeight: 1 }}>
-              $168.00
+              ${price}
             </Text>
             <Text fz="sm" c="dimmed" fw={500} style={{ lineHeight: 1 }} mt={3}>
               pelo serviço

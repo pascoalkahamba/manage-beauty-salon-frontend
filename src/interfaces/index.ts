@@ -47,11 +47,27 @@ export interface ICategory {
   services: IService[];
 }
 
+export interface IPicture {
+  url: string;
+  name: string;
+}
+
+export interface ICurrentUser {
+  id: number;
+  username: string;
+  email: string;
+  cellphone: string;
+  role: TRole;
+  academicLevelId: number;
+}
+
 export interface IService {
   id: number;
   name: string;
   description: string;
   price: number;
+  duration: number;
+  image: IPicture;
   categoryId: number;
   category: ICategory;
 }

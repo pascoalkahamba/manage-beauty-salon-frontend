@@ -7,7 +7,7 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   return (
-    <section>
+    <section className="w-full mt-28">
       <Header />
       {children}
       <Footer />

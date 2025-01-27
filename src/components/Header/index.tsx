@@ -26,6 +26,9 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "@/components/Header/styles.module.css";
+import { ICurrentUser } from "@/interfaces";
+import { useQuery } from "@tanstack/react-query";
+import { getAllCategories } from "@/servers";
 
 const user = {
   name: "Jane Spoonfighter",
@@ -34,25 +37,23 @@ const user = {
     "https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-5.png",
 };
 
-const tabs = [
-  "Home",
-  "Orders",
-  "Education",
-  "Community",
-  "Forums",
-  "Support",
-  "Account",
-  "Helpdesk",
-];
-
 export default function Header() {
   const theme = useMantineTheme();
   const [opened, { toggle }] = useDisclosure(false);
   const [userMenuOpened, setUserMenuOpened] = useState(false);
 
-  const items = tabs.map((tab) => (
-    <Tabs.Tab value={tab} key={tab}>
-      {tab}
+  const currentUser = JSON.parse(
+    localStorage.getItem("userInfo") as string
+  ) as ICurrentUser;
+
+  const { data: allCategories } = useQuery({
+    queryKey: [`${currentUser.id}-allCategories`],
+    queryFn: getAllCategories,
+  });
+
+  const items = allCategories?.map((category) => (
+    <Tabs.Tab value={`${category.id}`} key={category.id}>
+      {category.name}
     </Tabs.Tab>
   ));
 
