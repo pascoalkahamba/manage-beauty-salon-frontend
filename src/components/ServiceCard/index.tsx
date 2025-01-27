@@ -40,7 +40,7 @@ export default function ServiceCard({
         <div>
           <Text fw={500}> {name}</Text>
           <Text fz="xs" c="dimmed">
-            {description}{" "}
+            {description}
           </Text>
         </div>
         <Badge variant="outline">Categoria de cortes de cabelo</Badge>

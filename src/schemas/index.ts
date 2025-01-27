@@ -47,4 +47,26 @@ const loginSchema = zod.object({
   password: zod.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
 });
 
-export { createAccountSchema, loginSchema };
+const bookingSchema = zod.object({
+  serviceId: zod.string().min(1, "Serviço é obrigatório"),
+  employeeId: zod.string().min(1, "Profissional é obrigatório"),
+  date: zod
+    .date({
+      required_error: "Data é obrigatória",
+      invalid_type_error: "Data inválida",
+    })
+    .refine((date) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return date >= today;
+    }, "Data deve ser hoje ou futura"),
+  time: zod
+    .string()
+    .min(1, "Horário é obrigatório")
+    .refine((time) => {
+      const [hours, minutes] = time.split(":").map(Number);
+      return hours >= 8 && hours <= 20;
+    }, "Horário deve estar entre 8:00 e 20:00"),
+});
+
+export { createAccountSchema, loginSchema, bookingSchema };
