@@ -65,31 +65,27 @@ export default function DashboardChild() {
     );
 
   return (
-    <>
-      {/* Your services grid here */}
-      <div className="flex items-center gap-3 w-full mt-10 flex-wrap justify-center">
-        {allServices.map((service) => (
-          <ServiceCard
-            key={service.id}
-            name={service.name}
-            description={service.description}
-            price={service.price}
-            image={service.image}
-            duration={service.duration}
-            category={service.category}
-          />
-        ))}
-      </div>
-
+    <div className="flex items-center gap-3 w-full mt-10 flex-wrap justify-center">
+      {allServices.map((service) => (
+        <ServiceCard
+          key={service.id}
+          name={service.name}
+          description={service.description}
+          price={service.price}
+          image={service.image}
+          duration={service.duration}
+          category={service.category}
+        />
+      ))}
       {!selectedService && (
         <BookingModal
           opened={!selectedService}
           onClose={() => setSelectedService(null)}
-          service={getServiceById("srv1")}
+          service={getServiceById("srv1") as unknown as Service}
           onAddToCart={handleAddToCart}
           onBookNow={handleBookNow}
         />
       )}
-    </>
+    </div>
   );
 }

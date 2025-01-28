@@ -1,7 +1,6 @@
 // schema.ts
 
 // BookingModal.tsx
-import { useState } from "react";
 import { useForm, zodResolver } from "@mantine/form";
 import {
   Modal,
@@ -9,13 +8,11 @@ import {
   Image,
   Text,
   Title,
-  Badge,
   Stack,
   Group,
   Avatar,
   Button,
   Select,
-  Box,
   Paper,
   Divider,
   NumberFormatter,
