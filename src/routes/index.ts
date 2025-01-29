@@ -25,7 +25,7 @@ const GETALLCARTSROUTE = "/cart/getAllCarts";
 const GETCARTBYIDROUTE = "/cart/getOneCart";
 const UPDATECARTROUTE = "/cart/update";
 const DELETECARTROUTE = "/cart/delete";
-const GETCARTBYCLIENTIDROUTE = "/cart/getOneCartByClientId";
+const GETCARTBYCLIENTIDROUTE = "/cart/getCartByClientId";
 
 // academic level routes
 const GETALLACADEMICLEVELSROUTE = "/academicLevel/getAllAcademicLevels";

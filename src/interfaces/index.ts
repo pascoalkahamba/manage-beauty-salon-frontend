@@ -18,6 +18,11 @@ export interface ICreateAccountResponse {
   role: TRole;
 }
 
+export interface ICart {
+  clientId: number;
+  appointment: IAppointment;
+}
+
 export interface ILogin {
   email: string;
   password: string;
@@ -71,9 +76,12 @@ export interface IPicture {
   name: string;
 }
 
-export interface ICreatCart {
+export interface ICreateCart {
   clientId: number;
   appointmentId: number;
+}
+export interface IUpdateCart extends ICreateCart {
+  id: number;
 }
 
 export interface ICreateAppointment {

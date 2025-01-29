@@ -1,29 +1,38 @@
 import {
   IAcademicLevel,
   IAppointment,
+  ICart,
   ICategory,
   ICreateAccount,
   ICreateAccountResponse,
   ICreateAppointment,
+  ICreateCart,
   ILogin,
   ILoginResponse,
   IService,
   IUpdateAppointment,
+  IUpdateCart,
 } from "@/interfaces";
 import axiosApp from "@/axios";
 import {
   CREATEACCOUNTCLIENTROUTE,
   CREATEACCOUNTEMPLOYEEROUTE,
   CREATEAPPOINTMENTROUTE,
+  CREATECARTROUTE,
   DELETEAPPOINTMENTROUTE,
+  DELETECARTROUTE,
   GETALLACADEMICLEVELSROUTE,
   GETALLAPPOINTMENTSROUTE,
+  GETALLCARTSROUTE,
   GETALLCATEGORIESROUTE,
   GETALLSERVICESROUTE,
   GETAPPOINTMENTBYIDROUTE,
+  GETCARTBYCLIENTIDROUTE,
+  GETCARTBYIDROUTE,
   SIGNINCLIENTROUTE,
   SIGNINEMPLOYEEROUTE,
   UPDATEAPPOINTMENTROUTE,
+  UPDATECARTROUTE,
 } from "@/routes";
 
 export async function createAccount(userInfo: ICreateAccount) {
@@ -109,4 +118,40 @@ export async function deleteAppointment(appointmentId: number) {
 
   const appointment = response.data;
   return appointment as unknown as IAppointment;
+}
+
+export async function createCart(cart: ICreateCart) {
+  const response = await axiosApp.post(CREATECARTROUTE, cart);
+  const newCart = response.data;
+  return newCart as unknown as ICart;
+}
+
+export async function getAllCarts() {
+  const response = await axiosApp.get(GETALLCARTSROUTE);
+  const carts = response.data;
+  return carts as unknown as ICart;
+}
+
+export async function deleteAppointmentFromCart(cartId: number) {
+  const response = await axiosApp.delete(`${DELETECARTROUTE}/${cartId}`);
+  const cart = response.data;
+  return cart as unknown as ICart;
+}
+
+export async function getCartById(cartId: number) {
+  const response = await axiosApp.get(`${GETCARTBYIDROUTE}/${cartId}`);
+  const cart = response.data;
+  return cart as unknown as ICart;
+}
+
+export async function getCartByClientId(clientId: number) {
+  const response = await axiosApp.get(`${GETCARTBYCLIENTIDROUTE}/${clientId}`);
+  const cart = response.data;
+  return cart as unknown as ICart;
+}
+
+export async function updateCart(cart: IUpdateCart) {
+  const response = await axiosApp.post(`${UPDATECARTROUTE}/${cart.id}`, cart);
+  const cartUpdated = response.data;
+  return cartUpdated as unknown as ICart;
 }
