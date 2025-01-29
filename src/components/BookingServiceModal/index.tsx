@@ -22,6 +22,9 @@ import { notifications } from "@mantine/notifications";
 import { IconClock, IconCurrency, IconCategory } from "@tabler/icons-react";
 import { BookingFormValues } from "@/@types";
 import { bookingSchema } from "@/schemas";
+import { useAtom } from "jotai";
+import { modalAtom } from "@/storage/atom";
+import { ICart, ICreateAppointment, IService } from "@/interfaces";
 
 export interface Employee {
   id: string;
@@ -31,66 +34,64 @@ export interface Employee {
   availability: string[];
 }
 
-export interface Service {
-  id: string;
-  name: string;
-  description: string;
-  duration: number;
-  price: number;
-  category: string;
-  image: string;
-  employees: Employee[];
-}
-
-export interface CartItem {
+export interface ICart {
   serviceId: string;
   employeeId: string;
   date: Date;
-  time: string;
+  hour: string;
 }
 
 interface BookingModalProps {
-  opened: boolean;
-  onClose: () => void;
-  service: Service;
-  onAddToCart: (item: CartItem) => void;
-  onBookNow: (item: CartItem) => void;
+  service: IService;
+  appointmentIsPending: boolean;
+  appointmentIsError: boolean;
+  onAddToCart: (item: ICart) => void;
+  onBookNow: (item: ICreateAppointment) => void;
 }
 
 export function BookingModal({
-  opened,
-  onClose,
   service,
   onAddToCart,
   onBookNow,
 }: BookingModalProps) {
   const form = useForm<BookingFormValues>({
     initialValues: {
-      serviceId: service.id,
-      employeeId: "",
-      date: null,
-      time: "",
+      employeeId: 0,
+      date: new Date(),
+      hour: "",
     },
     validate: zodResolver(bookingSchema),
   });
 
-  // Helper function to check if time slot is available
+  const [modal, setModal] = useAtom(modalAtom);
+
+  function onClose() {
+    setModal({
+      type: "appointmentServie",
+      status: false,
+    });
+  }
+
+  // Helper function to check if hour slot is available
   const isTimeSlotAvailable = (
-    employeeId: string,
+    employeeId: number,
     date: Date,
-    time: string
+    hour: string
   ) => {
     const employee = service.employees.find((emp) => emp.id === employeeId);
-    return employee?.availability.includes(time) || false;
+    return !employee?.availability?.includes(hour) || false;
   };
 
   // Helper function to format cart item
-  const createCartItem = (values: BookingFormValues): CartItem => {
+  const createCartItem = (values: BookingFormValues): ICart => {
     return {
-      serviceId: values.serviceId,
-      employeeId: values.employeeId,
-      date: values.date,
-      time: values.time,
+      clientId: 3,
+      appointment: {
+        serviceId: values.serviceId,
+        employeeId: values.employeeId,
+        date: values.date,
+        hour: values.hour,
+      },
     };
   };
 
@@ -106,7 +107,7 @@ export function BookingModal({
       return;
     }
 
-    if (!isTimeSlotAvailable(values.employeeId, values.date, values.time)) {
+    if (!isTimeSlotAvailable(+values.employeeId, values.date, values.hour)) {
       notifications.show({
         title: "Horário Indisponível",
         message:
@@ -139,7 +140,7 @@ export function BookingModal({
       return;
     }
 
-    if (!isTimeSlotAvailable(values.employeeId, values.date, values.time)) {
+    if (!isTimeSlotAvailable(+values.employeeId, values.date, values.hour)) {
       notifications.show({
         title: "Horário Indisponível",
         message:
@@ -150,22 +151,32 @@ export function BookingModal({
     }
 
     const cartItem = createCartItem(values);
-    onBookNow(cartItem);
+    onBookNow(values);
+    form.reset();
     onClose();
   };
 
   return (
     <Modal
-      opened={opened}
+      opened={modal.status}
       onClose={onClose}
       size="xl"
       title={<Title order={2}>{service.name}</Title>}
+      overlayProps={{
+        color: "#1a1a1e4f",
+        opacity: 0.3,
+        blur: 2,
+      }}
     >
       <Grid>
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Image
-            src={service.images[0].url}
-            alt={service.images[0].alt}
+            src={
+              !service.picture.url
+                ? "/images/haircutWoman.jpg"
+                : service.picture.url
+            }
+            alt={service.picture.name}
             radius="md"
             h={300}
             fit="cover"
@@ -174,7 +185,7 @@ export function BookingModal({
           <Stack mt="md" gap="xs">
             <Group>
               <IconCategory size={20} />
-              <Text>{service.category}</Text>
+              <Text>{service.category.name}</Text>
             </Group>
 
             <Group>
@@ -208,25 +219,11 @@ export function BookingModal({
                   label="Profissional"
                   placeholder="Selecione um profissional"
                   data={service.employees.map((emp) => ({
-                    value: emp.id,
-                    label: emp.name,
-                    image: emp.avatar,
+                    value: `${emp.id}`,
+                    label: emp.username,
                   }))}
                   error={form.errors.employeeId}
                   {...form.getInputProps("employeeId")}
-                  itemComponent={({ image, label }) => (
-                    <Group>
-                      <Avatar src={image} radius="xl" size="sm" />
-                      <div>
-                        <Text size="sm">{label}</Text>
-                        <Text size="xs" c="dimmed">
-                          {service.employees
-                            .find((emp) => emp.name === label)
-                            ?.specialties.join(", ")}
-                        </Text>
-                      </div>
-                    </Group>
-                  )}
                 />
 
                 <DatePickerInput
@@ -241,8 +238,8 @@ export function BookingModal({
                 <TimeInput
                   label="Horário"
                   placeholder="Selecione o horário"
-                  error={form.errors.time}
-                  {...form.getInputProps("time")}
+                  error={form.errors.hour}
+                  {...form.getInputProps("hour")}
                 />
 
                 <Divider my="sm" />

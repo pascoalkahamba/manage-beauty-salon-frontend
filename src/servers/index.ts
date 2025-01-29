@@ -29,6 +29,7 @@ import {
   GETAPPOINTMENTBYIDROUTE,
   GETCARTBYCLIENTIDROUTE,
   GETCARTBYIDROUTE,
+  GETSERVICEBYIDROUTE,
   SIGNINCLIENTROUTE,
   SIGNINEMPLOYEEROUTE,
   UPDATEAPPOINTMENTROUTE,
@@ -72,6 +73,12 @@ export async function getAllServices() {
   const response = await axiosApp.get(GETALLSERVICESROUTE);
   const services = response.data;
   return services as unknown as IService[];
+}
+
+export async function getServiceById(serviceId: number) {
+  const response = await axiosApp.get(`${GETSERVICEBYIDROUTE}/${serviceId}`);
+  const service = response.data;
+  return service as unknown as IService;
 }
 
 export async function getAllAcademicLevels() {

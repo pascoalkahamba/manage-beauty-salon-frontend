@@ -4,27 +4,8 @@ import { ICurrentUser } from "@/interfaces";
 import { getAllServices } from "@/servers";
 import { useQuery } from "@tanstack/react-query";
 import SkeletonComponent from "@/components/Skeleton";
-import {
-  BookingModal,
-  CartItem,
-  Service,
-} from "@/components/BookingServiceModal";
-import { useState } from "react";
-import { getServiceById } from "@/mocks";
 
 export default function DashboardChild() {
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [cart, setCart] = useState<CartItem[]>([]);
-
-  const handleAddToCart = (item: CartItem) => {
-    setCart([...cart, item]);
-  };
-
-  const handleBookNow = (item: CartItem) => {
-    // Implement direct booking logic
-    console.log("Booking now:", item);
-  };
-
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
@@ -69,6 +50,7 @@ export default function DashboardChild() {
       {allServices.map((service) => (
         <ServiceCard
           key={service.id}
+          serviceId={service.id}
           name={service.name}
           description={service.description}
           price={service.price}
@@ -77,15 +59,6 @@ export default function DashboardChild() {
           category={service.category}
         />
       ))}
-      {!selectedService && (
-        <BookingModal
-          opened={!selectedService}
-          onClose={() => setSelectedService(null)}
-          service={getServiceById("srv1") as unknown as Service}
-          onAddToCart={handleAddToCart}
-          onBookNow={handleBookNow}
-        />
-      )}
     </div>
   );
 }

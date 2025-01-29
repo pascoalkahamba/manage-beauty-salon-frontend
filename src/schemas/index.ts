@@ -1,3 +1,4 @@
+import { TStatus } from "@/@types";
 import { EMPLOYEE_CODE_REGEX } from "@/utils";
 import { z as zod } from "zod";
 
@@ -48,8 +49,7 @@ const loginSchema = zod.object({
 });
 
 const bookingSchema = zod.object({
-  serviceId: zod.string().min(1, "Serviço é obrigatório"),
-  employeeId: zod.string().min(1, "Profissional é obrigatório"),
+  employeeId: zod.string().min(1, "Funcionário é obrigatório"),
   date: zod
     .date({
       required_error: "Data é obrigatória",
@@ -60,11 +60,11 @@ const bookingSchema = zod.object({
       today.setHours(0, 0, 0, 0);
       return date >= today;
     }, "Data deve ser hoje ou futura"),
-  time: zod
+  hour: zod
     .string()
     .min(1, "Horário é obrigatório")
-    .refine((time) => {
-      const [hours, minutes] = time.split(":").map(Number);
+    .refine((hour) => {
+      const [hours, minutes] = hour.split(":").map(Number);
       return hours >= 8 && hours <= 20;
     }, "Horário deve estar entre 8:00 e 20:00"),
 });

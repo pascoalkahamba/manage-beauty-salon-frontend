@@ -8,9 +8,17 @@ const SIGNINCLIENTROUTE = "/client/login";
 
 // category routes
 const GETALLCATEGORIESROUTE = "/category/getAllCategories";
+const GETCATEGORYBYIDROUTE = "/category/getOneCategory";
+const CREATECATEGORYROUTE = "/category/create";
+const UPDATECATEGORYROUTE = "/category/update";
+const DELETECATEGORYROUTE = "/category/delete";
 
 // services routes
 const GETALLSERVICESROUTE = "/service/getAllServices";
+const GETSERVICEBYIDROUTE = "/service/getOneService";
+const CREATESERVICEROUTE = "/service/create";
+const UPDATESERVICEROUTE = "/service/update";
+const DELETESERVICEROUTE = "/service/delete";
 
 // appointment routes
 const CREATEAPPOINTMENTROUTE = "/appointment/create";
@@ -40,6 +48,14 @@ export {
   GETAPPOINTMENTBYIDROUTE,
   GETALLCARTSROUTE,
   GETCARTBYCLIENTIDROUTE,
+  GETSERVICEBYIDROUTE,
+  GETCATEGORYBYIDROUTE,
+  DELETECATEGORYROUTE,
+  CREATECATEGORYROUTE,
+  UPDATECATEGORYROUTE,
+  DELETESERVICEROUTE,
+  CREATESERVICEROUTE,
+  UPDATESERVICEROUTE,
   CREATECARTROUTE,
   UPDATECARTROUTE,
   GETCARTBYIDROUTE,

@@ -7,5 +7,6 @@ export type TDataLoginProps = zod.infer<typeof loginSchema>;
 export type BookingFormValues = zod.infer<typeof bookingSchema>;
 
 export type TRole = "EMPLOYEE" | "CLIENT" | "MANAGER";
+export type TStatus = "PENDING" | "CONFIRMED" | "CANCELED";
 
 export type TTypeButton = "button" | "submit" | "reset" | undefined;

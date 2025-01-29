@@ -1,4 +1,4 @@
-import { TRole } from "@/@types";
+import { TRole, TStatus } from "@/@types";
 
 export interface ICreateAccount {
   username: string;
@@ -50,6 +50,7 @@ export interface IEmployee {
   username: string;
   email: string;
   cellphone: string;
+  availability?: string;
   role: TRole;
   academicLevelId: number;
   academicLevel: IAcademicLevel;
@@ -87,8 +88,8 @@ export interface IUpdateCart extends ICreateCart {
 export interface ICreateAppointment {
   serviceId: number;
   employeeId: number;
-  date: string;
-  status: string;
+  date: Date;
+  status: TStatus;
   clientId: number;
   hour: string;
 }
@@ -123,7 +124,8 @@ export interface IService {
   description: string;
   price: number;
   duration: number;
-  image: IPicture;
+  picture: IPicture;
   categoryId: number;
+  employees: IEmployee[];
   category: ICategory;
 }
