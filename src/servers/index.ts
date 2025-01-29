@@ -1,21 +1,29 @@
 import {
   IAcademicLevel,
+  IAppointment,
   ICategory,
   ICreateAccount,
   ICreateAccountResponse,
+  ICreateAppointment,
   ILogin,
   ILoginResponse,
   IService,
+  IUpdateAppointment,
 } from "@/interfaces";
 import axiosApp from "@/axios";
 import {
   CREATEACCOUNTCLIENTROUTE,
   CREATEACCOUNTEMPLOYEEROUTE,
+  CREATEAPPOINTMENTROUTE,
+  DELETEAPPOINTMENTROUTE,
   GETALLACADEMICLEVELSROUTE,
+  GETALLAPPOINTMENTSROUTE,
   GETALLCATEGORIESROUTE,
   GETALLSERVICESROUTE,
+  GETAPPOINTMENTBYIDROUTE,
   SIGNINCLIENTROUTE,
   SIGNINEMPLOYEEROUTE,
+  UPDATEAPPOINTMENTROUTE,
 } from "@/routes";
 
 export async function createAccount(userInfo: ICreateAccount) {
@@ -61,4 +69,44 @@ export async function getAllAcademicLevels() {
   const response = await axiosApp.get(GETALLACADEMICLEVELSROUTE);
   const academicLevels = response.data;
   return academicLevels as unknown as IAcademicLevel[];
+}
+
+export async function creatAppointment(appointment: ICreateAppointment) {
+  const response = await axiosApp.post(CREATEAPPOINTMENTROUTE, appointment);
+  const appointmentCreated = response.data;
+  return appointmentCreated as unknown as IAppointment;
+}
+
+export async function getAllAppointments() {
+  const response = await axiosApp.get(GETALLAPPOINTMENTSROUTE);
+  const appointments = response.data;
+  return appointments as unknown as IAppointment[];
+}
+
+export async function getOneAppointment(appointmentId: number) {
+  const response = await axiosApp.get(
+    `${GETAPPOINTMENTBYIDROUTE}/${appointmentId}`
+  );
+  const appointment = response.data;
+
+  return appointment as unknown as IAppointment;
+}
+
+export async function updateAppointment(appointment: IUpdateAppointment) {
+  const response = await axiosApp.post(
+    `${UPDATEAPPOINTMENTROUTE}/${appointment.id}`,
+    appointment
+  );
+  const updatedAppointment = response.data;
+
+  return updatedAppointment as unknown as IAppointment;
+}
+
+export async function deleteAppointment(appointmentId: number) {
+  const response = await axiosApp.delete(
+    `${DELETEAPPOINTMENTROUTE}/${appointmentId}`
+  );
+
+  const appointment = response.data;
+  return appointment as unknown as IAppointment;
 }

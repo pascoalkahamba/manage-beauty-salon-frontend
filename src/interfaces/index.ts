@@ -40,6 +40,25 @@ export interface IAcademicLevel {
   description: string;
 }
 
+export interface IEmployee {
+  id: number;
+  username: string;
+  email: string;
+  cellphone: string;
+  role: TRole;
+  academicLevelId: number;
+  academicLevel: IAcademicLevel;
+  services: IService[];
+}
+
+export interface IClient {
+  id: number;
+  username: string;
+  email: string;
+  cellphone: string;
+  role: TRole;
+}
+
 export interface ICategory {
   id: number;
   name: string;
@@ -50,6 +69,35 @@ export interface ICategory {
 export interface IPicture {
   url: string;
   name: string;
+}
+
+export interface ICreatCart {
+  clientId: number;
+  appointmentId: number;
+}
+
+export interface ICreateAppointment {
+  serviceId: number;
+  employeeId: number;
+  date: string;
+  status: string;
+  clientId: number;
+  hour: string;
+}
+export interface IAppointment {
+  id: number;
+  date: string;
+  status: string;
+  serviceId: number;
+  employeeId: number;
+  clientId: number;
+  service: IService;
+  employee: IEmployee;
+  client: IClient;
+}
+
+export interface IUpdateAppointment extends ICreateAppointment {
+  id: number;
 }
 
 export interface ICurrentUser {
