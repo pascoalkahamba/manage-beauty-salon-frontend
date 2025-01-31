@@ -16,7 +16,7 @@ import { BookingModal } from "@/components/BookingServiceModal";
 import SkeletonComponent from "@/components/Skeleton";
 import { notifications } from "@mantine/notifications";
 import { creatAppointment, createCart, getServiceById } from "@/servers";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface ServiceCardProps {
   height: string;
@@ -40,6 +40,7 @@ export default function ServiceCardCarouusel({
   height,
 }: ServiceCardProps) {
   const { convertMinutes } = useTimeConverter();
+  const queryClient = useQueryClient();
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
@@ -60,6 +61,9 @@ export default function ServiceCardCarouusel({
         message: "Serviço adicionado ao carrinho com sucesso!",
         color: "green",
         position: "top-right",
+      });
+      queryClient.invalidateQueries({
+        queryKey: [`${currentUser.id}-${currentUser.role}-getOneUser`],
       });
     },
     onError: () => {

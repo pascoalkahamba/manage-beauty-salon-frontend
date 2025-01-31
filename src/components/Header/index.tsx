@@ -28,24 +28,20 @@ import { useDisclosure } from "@mantine/hooks";
 import classes from "@/components/Header/styles.module.css";
 import { ICurrentUser } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
-import { getAllCategories } from "@/servers";
+import { getAllCategories, getUserById } from "@/servers";
 import CartHeaderIcon from "@/components/CartHeaderIcon";
-
-const user = {
-  name: "Jane Spoonfighter",
-  email: "janspoon@fighter.dev",
-  image:
-    "https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-5.png",
-};
 
 export default function Header() {
   const theme = useMantineTheme();
   const [opened, { toggle }] = useDisclosure(false);
   const [userMenuOpened, setUserMenuOpened] = useState(false);
-
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
+  const { data: user } = useQuery({
+    queryKey: [`${currentUser.id}-${currentUser.role}-getOneUser`],
+    queryFn: () => getUserById(currentUser.id, currentUser.role),
+  });
 
   const { data: allCategories } = useQuery({
     queryKey: [`${currentUser.id}-allCategories`],
@@ -58,6 +54,7 @@ export default function Header() {
     </Tabs.Tab>
   ));
 
+  console.log("user", user);
   return (
     <div className={classes.header}>
       <Container className={classes.mainSection} size="md">
@@ -81,13 +78,13 @@ export default function Header() {
                 >
                   <Group gap={7}>
                     <Avatar
-                      src={user.image}
-                      alt={user.name}
+                      src={user?.profile.photo.url}
+                      alt={user?.profile.photo.name}
                       radius="xl"
                       size={20}
                     />
                     <Text fw={500} size="sm" lh={1} mr={3}>
-                      {user.name}
+                      {user?.username}
                     </Text>
                     <IconChevronDown size={12} stroke={1.5} />
                   </Group>
@@ -159,7 +156,7 @@ export default function Header() {
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
-            <CartHeaderIcon itemCount={10} />
+            <CartHeaderIcon itemCount={user?.cart?.appointment.length} />
           </Group>
         </Group>
       </Container>

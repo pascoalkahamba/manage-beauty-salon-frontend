@@ -14,7 +14,7 @@ import {
 import { BookingModal } from "@/components/BookingServiceModal";
 import { useSetAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { creatAppointment, createCart, getServiceById } from "@/servers";
 import SkeletonComponent from "@/components/Skeleton";
 import { notifications } from "@mantine/notifications";
@@ -49,6 +49,7 @@ export default function ServiceCard({
     queryFn: () => getServiceById(serviceId),
   });
 
+  const queryClient = useQueryClient();
   const { mutate: mutateCreateCart } = useMutation({
     mutationFn: (cart: ICreateCart) => createCart(cart),
     onSuccess: () => {
@@ -57,6 +58,9 @@ export default function ServiceCard({
         message: "Serviço adicionado ao carrinho com sucesso!",
         color: "green",
         position: "top-right",
+      });
+      queryClient.invalidateQueries({
+        queryKey: [`${currentUser.id}-${currentUser.role}-getOneUser`],
       });
     },
     onError: () => {

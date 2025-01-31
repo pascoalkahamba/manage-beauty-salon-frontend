@@ -12,6 +12,7 @@ import {
   IService,
   IUpdateAppointment,
   IUpdateCart,
+  IUser,
 } from "@/interfaces";
 import axiosApp from "@/axios";
 import {
@@ -29,12 +30,15 @@ import {
   GETAPPOINTMENTBYIDROUTE,
   GETCARTBYCLIENTIDROUTE,
   GETCARTBYIDROUTE,
+  GETCLIENTBYIDROUTE,
+  GETEMPLOYEEBYIDROUTE,
   GETSERVICEBYIDROUTE,
   SIGNINCLIENTROUTE,
   SIGNINEMPLOYEEROUTE,
   UPDATEAPPOINTMENTROUTE,
   UPDATECARTROUTE,
 } from "@/routes";
+import { TRole } from "@/@types";
 
 export async function createAccount(userInfo: ICreateAccount) {
   const { role } = userInfo;
@@ -67,6 +71,16 @@ export async function getAllCategories() {
   const response = await axiosApp.get(GETALLCATEGORIESROUTE);
   const categories = response.data;
   return categories as unknown as ICategory[];
+}
+
+export async function getUserById(userId: number, role: TRole) {
+  const url =
+    role === "EMPLOYEE" || role === "MANAGER"
+      ? GETEMPLOYEEBYIDROUTE
+      : GETCLIENTBYIDROUTE;
+  const response = await axiosApp.get(`${url}/${userId}`);
+  const user = response.data;
+  return user as unknown as IUser;
 }
 
 export async function getAllServices() {

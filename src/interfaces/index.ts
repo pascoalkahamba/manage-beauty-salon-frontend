@@ -20,7 +20,8 @@ export interface ICreateAccountResponse {
 
 export interface ICart {
   clientId: number;
-  appointment: IAppointment;
+  appointment: IAppointment[];
+  id: number;
 }
 
 export interface ILogin {
@@ -75,6 +76,27 @@ export interface ICategory {
 export interface IPicture {
   url: string;
   name: string;
+}
+
+export interface IUser {
+  id: number;
+  username: string;
+  email: string;
+  cellphone: string;
+  categories?: ICategory[];
+  role: TRole;
+  profile: IProfile;
+  cart?: ICart;
+  appointments: IAppointment[];
+  services?: IService[];
+  academicLevel?: IAcademicLevel;
+}
+
+export interface IProfile {
+  bio: string;
+  photo: IPicture;
+  clientId: number;
+  employeeId: number;
 }
 
 export interface IDataForCreateAppointment {
