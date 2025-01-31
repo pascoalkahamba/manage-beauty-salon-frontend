@@ -54,7 +54,7 @@ export default function DashboardChild() {
           name={service.name}
           description={service.description}
           price={service.price}
-          image={service.image}
+          image={service.picture}
           duration={service.duration}
           category={service.category}
         />

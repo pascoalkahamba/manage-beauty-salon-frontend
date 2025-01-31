@@ -6,16 +6,17 @@ import classes from "@/components/ServiceCard/styles.module.css";
 import {
   ICategory,
   ICreateAppointment,
+  ICreateCart,
   ICurrentUser,
+  IDataForCreateAppointment,
   IPicture,
 } from "@/interfaces";
-import { useState } from "react";
-import { BookingModal, CartItem } from "../BookingServiceModal";
+import { BookingModal } from "@/components/BookingServiceModal";
 import { useSetAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { creatAppointment, getServiceById } from "@/servers";
-import SkeletonComponent from "../Skeleton";
+import { creatAppointment, createCart, getServiceById } from "@/servers";
+import SkeletonComponent from "@/components/Skeleton";
 import { notifications } from "@mantine/notifications";
 
 interface ServiceCardProps {
@@ -36,8 +37,6 @@ export default function ServiceCard({
   serviceId,
   duration,
 }: ServiceCardProps) {
-  const [cart, setCart] = useState<CartItem[]>([]);
-
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
@@ -49,9 +48,31 @@ export default function ServiceCard({
     queryKey: [`${currentUser.role}-${currentUser.id}-getOneService`],
     queryFn: () => getServiceById(serviceId),
   });
+
+  const { mutate: mutateCreateCart } = useMutation({
+    mutationFn: (cart: ICreateCart) => createCart(cart),
+    onSuccess: () => {
+      notifications.show({
+        title: "Serviço adicionado ao carrinho!",
+        message: "Serviço adicionado ao carrinho com sucesso!",
+        color: "green",
+        position: "top-right",
+      });
+    },
+    onError: () => {
+      notifications.show({
+        title: "Erro ao adicionar ao carrinho",
+        message:
+          "Ocorreu um erro ao adicionar o serviço ao carrinho. Tente novamente mais tarde.",
+        color: "red",
+        position: "top-right",
+      });
+    },
+  });
   const {
     mutate,
     isPending: appointmentIsPending,
+    data: appointmentData,
     isError: appointmentIsError,
   } = useMutation({
     mutationFn: (item: ICreateAppointment) => creatAppointment(item),
@@ -73,13 +94,18 @@ export default function ServiceCard({
       });
     },
   });
-  const handleAddToCart = (item: CartItem) => {
-    setCart([...cart, item]);
+  const handleAddToCart = async (item: IDataForCreateAppointment) => {
+    await handleBookNow(item);
+
+    mutateCreateCart({
+      clientId: currentUser.id,
+      appointmentId: appointmentData?.id as number,
+    });
   };
 
   const setModal = useSetAtom(modalAtom);
 
-  const handleBookNow = (item: ICreateAppointment) => {
+  const handleBookNow = async (item: IDataForCreateAppointment) => {
     // Implement direct booking logic
     mutate({
       clientId: currentUser.id,

@@ -10,7 +10,6 @@ import {
   Title,
   Stack,
   Group,
-  Avatar,
   Button,
   Select,
   Paper,
@@ -24,7 +23,7 @@ import { BookingFormValues } from "@/@types";
 import { bookingSchema } from "@/schemas";
 import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
-import { ICart, ICreateAppointment, IService } from "@/interfaces";
+import { IDataForCreateAppointment, IService } from "@/interfaces";
 
 export interface Employee {
   id: string;
@@ -45,8 +44,8 @@ interface BookingModalProps {
   service: IService;
   appointmentIsPending: boolean;
   appointmentIsError: boolean;
-  onAddToCart: (item: ICart) => void;
-  onBookNow: (item: ICreateAppointment) => void;
+  onAddToCart: (item: IDataForCreateAppointment) => void;
+  onBookNow: (item: IDataForCreateAppointment) => void;
 }
 
 export function BookingModal({
@@ -56,7 +55,7 @@ export function BookingModal({
 }: BookingModalProps) {
   const form = useForm<BookingFormValues>({
     initialValues: {
-      employeeId: 0,
+      employeeId: "0",
       date: new Date(),
       hour: "",
     },
@@ -83,17 +82,6 @@ export function BookingModal({
   };
 
   // Helper function to format cart item
-  const createCartItem = (values: BookingFormValues): ICart => {
-    return {
-      clientId: 3,
-      appointment: {
-        serviceId: values.serviceId,
-        employeeId: values.employeeId,
-        date: values.date,
-        hour: values.hour,
-      },
-    };
-  };
 
   const handleAddToCart = (values: BookingFormValues) => {
     const { hasErrors } = form.validate();
@@ -117,8 +105,7 @@ export function BookingModal({
       return;
     }
 
-    const cartItem = createCartItem(values);
-    onAddToCart(cartItem);
+    onAddToCart(values);
 
     notifications.show({
       title: "Sucesso",
@@ -150,7 +137,6 @@ export function BookingModal({
       return;
     }
 
-    const cartItem = createCartItem(values);
     onBookNow(values);
     form.reset();
     onClose();

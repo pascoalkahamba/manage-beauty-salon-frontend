@@ -77,6 +77,12 @@ export interface IPicture {
   name: string;
 }
 
+export interface IDataForCreateAppointment {
+  employeeId: string;
+  date: Date;
+  hour: string;
+}
+
 export interface ICreateCart {
   clientId: number;
   appointmentId: number;
