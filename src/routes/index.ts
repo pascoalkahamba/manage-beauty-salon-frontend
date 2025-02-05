@@ -3,12 +3,14 @@ const SIGNINEMPLOYEEROUTE = "/employee/login";
 const CREATEACCOUNTEMPLOYEEROUTE = "/employee/create";
 const GETALLEMPLOYEESROUTE = "/employee/getAllEmployees";
 const GETEMPLOYEEBYIDROUTE = "/employee/getOneEmployee";
+const UPDATEEMPLOYEEROUTE = "/employee/updateInfoProfile";
 
 // clients routes
 const CREATEACCOUNTCLIENTROUTE = "/client/create";
 const SIGNINCLIENTROUTE = "/client/login";
 const GETALLCLIENTSROUTE = "/client/getAllClients";
 const GETCLIENTBYIDROUTE = "/client/getOneClient";
+const UPDATECLIENTROUTE = "/client/updateInfoProfile";
 
 // category routes
 const GETALLCATEGORIESROUTE = "/category/getAllCategories";
@@ -71,6 +73,8 @@ export {
   UPDATESTATUSAPPOINTMENTROUTE,
   DELETECARTROUTE,
   UPDATEAPPOINTMENTROUTE,
+  UPDATECLIENTROUTE,
+  UPDATEEMPLOYEEROUTE,
   DELETEAPPOINTMENTROUTE,
   GETALLACADEMICLEVELSROUTE,
   GETALLCATEGORIESROUTE,

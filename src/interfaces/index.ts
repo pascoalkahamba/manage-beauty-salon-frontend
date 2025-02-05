@@ -46,6 +46,20 @@ export interface IAcademicLevel {
   description: string;
 }
 
+export interface IUpdateUserProfile {
+  username: string;
+  email: string;
+  id: number;
+  cellphone: string;
+  categoriesIds?: number[];
+  role: TRole;
+  academicLevelId: number;
+  servicesIds?: number[];
+  photo: IPicture;
+  bio: string;
+  password: string;
+}
+
 export interface IModalAtom {
   type: TOpenModal;
   status: boolean;
@@ -95,6 +109,11 @@ export interface IUser {
   appointments: IAppointment[];
   services?: IService[];
   academicLevel?: IAcademicLevel;
+}
+export interface IUserResponse {
+  email: string;
+  username: string;
+  role: TRole;
 }
 
 export interface IProfile {

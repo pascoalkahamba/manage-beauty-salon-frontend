@@ -14,7 +14,9 @@ import {
   IUpdateAppointment,
   IUpdateAppointmentStatus,
   IUpdateCart,
+  IUpdateUserProfile,
   IUser,
+  IUserResponse,
 } from "@/interfaces";
 import axiosApp from "@/axios";
 import {
@@ -39,6 +41,8 @@ import {
   SIGNINEMPLOYEEROUTE,
   UPDATEAPPOINTMENTROUTE,
   UPDATECARTROUTE,
+  UPDATECLIENTROUTE,
+  UPDATEEMPLOYEEROUTE,
   UPDATESTATUSAPPOINTMENTROUTE,
 } from "@/routes";
 import { TRole } from "@/@types";
@@ -74,6 +78,17 @@ export async function getAllCategories() {
   const response = await axiosApp.get(GETALLCATEGORIESROUTE);
   const categories = response.data;
   return categories as unknown as ICategory[];
+}
+
+export async function updateUserProfile(userInfo: IUpdateUserProfile) {
+  const currentRoute =
+    userInfo.role === "EMPLOYEE" ? UPDATEEMPLOYEEROUTE : UPDATECLIENTROUTE;
+  const response = await axiosApp.post(
+    `${currentRoute}/${userInfo.id}`,
+    userInfo
+  );
+  const user = response.data;
+  return user as unknown as IUserResponse;
 }
 
 export async function updateStatusAppointment(

@@ -7,20 +7,39 @@ import {
   FileInput,
   Avatar,
   Center,
+  MultiSelect,
 } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
 import { z } from "zod";
 import { IconUpload } from "@tabler/icons-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { IModalAtom } from "@/interfaces";
+import {
+  getAllAcademicLevels,
+  getAllCategories,
+  getAllServices,
+} from "@/servers";
+import { useQuery } from "@tanstack/react-query";
 
 // Update the schema to include photo
 const profileSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   phone: z.string().regex(/^\d{9}$/, "Phone number must be exactly 9 digits"),
   specialties: z.string().min(1, "Please select a specialty"),
+  servicesIds: z
+    .number()
+    .array()
+    .min(1, "Please select at least one service")
+    .optional(),
+  categoriesIds: z
+    .number()
+    .array()
+    .min(1, "Please select at least one service")
+    .optional(),
   education: z.string().min(3, "Education must be at least 3 characters"),
+  academicLevelId: z.string().min(1, "Please select an academic level"),
   role: z.string().min(3, "Role must be at least 3 characters"),
   availability: z.string().min(1, "Please select availability"),
   photo: z.any().optional(), // File upload is optional
@@ -44,6 +63,51 @@ export default function EditProfileModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     initialData.photoUrl || null
   );
+
+  const { data: serviceData, isError: serviceIsError } = useQuery({
+    queryKey: ["getAllServices"],
+    queryFn: getAllServices,
+  });
+
+  const {
+    data: categoryData,
+
+    isError: categoryIsError,
+  } = useQuery({
+    queryKey: ["getAllCategories"],
+    queryFn: getAllCategories,
+  });
+
+  const { data: academicLevelData, isError: academicLevelIsError } = useQuery({
+    queryKey: ["getAllAcademicLevels"],
+    queryFn: getAllAcademicLevels,
+  });
+
+  const allServices = useMemo(() => {
+    return (
+      serviceData?.map((service) => ({
+        value: `${service.id}`,
+        label: service.name,
+      })) || []
+    );
+  }, [serviceData]);
+
+  const allCategories = useMemo(() => {
+    return (
+      categoryData?.map((category) => ({
+        value: `${category.id}`,
+        label: category.name,
+      })) || []
+    );
+  }, [categoryData]);
+  const allAcademicLevels = useMemo(() => {
+    return (
+      academicLevelData?.map((academicLevel) => ({
+        value: `${academicLevel.id}`,
+        label: academicLevel.name,
+      })) || []
+    );
+  }, [academicLevelData]);
 
   const form = useForm<ProfileFormValues>({
     initialValues: initialData,
@@ -70,11 +134,19 @@ export default function EditProfileModal({
     }
   };
 
+  if (serviceIsError || categoryIsError || academicLevelIsError) {
+    return (
+      <p className="p-3 font-bold text-center">
+        Algo deu errado tente novamente:
+      </p>
+    );
+  }
+
   return (
     <Modal
       opened={opened.type === "editProfileInfo" && opened.status}
       onClose={onClose}
-      title="Edit Profile Information"
+      title="Editar informações do perfil"
       size="lg"
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -84,7 +156,7 @@ export default function EditProfileModal({
           </Center>
 
           <FileInput
-            label="Profile Photo"
+            label="Carregar nova foto"
             placeholder="Upload new photo"
             accept="image/png,image/jpeg,image/jpg"
             icon={<IconUpload size={16} />}
@@ -92,60 +164,74 @@ export default function EditProfileModal({
           />
 
           <TextInput
-            label="Name"
-            placeholder="Enter your full name"
+            label="Nome"
+            placeholder="Digete seu nome"
             {...form.getInputProps("name")}
           />
 
           <TextInput
             label="Email"
-            placeholder="your.email@example.com"
+            placeholder="seu.email@example.com"
             {...form.getInputProps("email")}
           />
 
           <TextInput
-            label="Phone Number"
+            label="Telefone"
             placeholder="941900324"
             {...form.getInputProps("phone")}
           />
-
-          <Select
-            label="Specialties"
-            placeholder="Select your specialty"
-            data={[
-              { value: "corte-frances", label: "Corte Frances" },
-              { value: "corte-classico", label: "Corte Clássico" },
-              { value: "tratamento-cabelo", label: "Tratamento de Cabelo" },
-              { value: "manicure", label: "Manicure" },
-            ]}
-            {...form.getInputProps("specialties")}
-          />
-
           <TextInput
-            label="Education"
-            placeholder="Your educational background"
-            {...form.getInputProps("education")}
+            label="Senha"
+            placeholder="********"
+            {...form.getInputProps("password")}
           />
 
-          <TextInput
-            label="Role"
-            placeholder="Your role in the salon"
-            {...form.getInputProps("role")}
+          <MultiSelect
+            label="Escolhe suas categorias"
+            data={allCategories?.map((category) => ({
+              value: category.value.toString(),
+              label: category.label,
+            }))}
+            placeholder="Escohe suas categorias"
+            value={form.values.categoriesIds?.map((id) => id.toString())}
+            nothingFoundMessage="Nenhuma categoria encontrada"
+            onChange={(value) =>
+              form.setFieldValue("categoriesIds", value.map(Number))
+            }
+            clearable
+            required
+            searchable
           />
 
+          <MultiSelect
+            label="Escolhe seus serviços"
+            data={allServices?.map((service) => ({
+              value: service.value.toString(),
+              label: service.label,
+            }))}
+            placeholder="Escolhe seus serviços"
+            value={form.values.servicesIds?.map((id) => id.toString())}
+            onChange={(value) =>
+              form.setFieldValue("servicesIds", value.map(Number))
+            }
+            nothingFoundMessage="Nenhum serviço encontrado"
+            clearable
+            searchable
+            required
+          />
           <Select
-            label="Availability"
-            placeholder="Select your availability"
-            data={[
-              { value: "todos-os-dias", label: "Todos os dias" },
-              { value: "dias-uteis", label: "Dias úteis" },
-              { value: "fins-de-semana", label: "Fins de semana" },
-            ]}
-            {...form.getInputProps("availability")}
+            label="Escolhe seu nível acadêmico"
+            placeholder="Escolhe seu nível acadêmico"
+            data={allAcademicLevels}
+            value={form.values.academicLevelId}
+            nothingFoundMessage="Nenhum nível acadêmico encontrado"
+            onChange={(value) =>
+              form.setFieldValue("academicLevelId", `${value}`)
+            }
           />
 
           <Button type="submit" fullWidth>
-            Save Changes
+            Salvar alterações
           </Button>
         </Stack>
       </form>
