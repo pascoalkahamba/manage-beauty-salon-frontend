@@ -1,6 +1,7 @@
 import {
   IAcademicLevel,
   IAppointment,
+  IAppointmentStatusResponse,
   ICart,
   ICategory,
   ICreateAccount,
@@ -11,6 +12,7 @@ import {
   ILoginResponse,
   IService,
   IUpdateAppointment,
+  IUpdateAppointmentStatus,
   IUpdateCart,
   IUser,
 } from "@/interfaces";
@@ -37,6 +39,7 @@ import {
   SIGNINEMPLOYEEROUTE,
   UPDATEAPPOINTMENTROUTE,
   UPDATECARTROUTE,
+  UPDATESTATUSAPPOINTMENTROUTE,
 } from "@/routes";
 import { TRole } from "@/@types";
 
@@ -71,6 +74,21 @@ export async function getAllCategories() {
   const response = await axiosApp.get(GETALLCATEGORIESROUTE);
   const categories = response.data;
   return categories as unknown as ICategory[];
+}
+
+export async function updateStatusAppointment(
+  appointmentInfo: IUpdateAppointmentStatus
+) {
+  const { id, reason, status } = appointmentInfo;
+  const response = await axiosApp.post(
+    `${UPDATESTATUSAPPOINTMENTROUTE}/${id}`,
+    {
+      reason,
+      status,
+    }
+  );
+  const appointment = response.data;
+  return appointment as unknown as IAppointmentStatusResponse;
 }
 
 export async function getUserById(userId: number, role: TRole) {

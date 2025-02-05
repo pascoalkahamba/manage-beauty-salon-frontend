@@ -30,6 +30,7 @@ const GETALLAPPOINTMENTSROUTE = "/appointment/getAllAppointments";
 const GETAPPOINTMENTBYIDROUTE = "/appointment/getOneAppointment";
 const UPDATEAPPOINTMENTROUTE = "/appointment/update";
 const DELETEAPPOINTMENTROUTE = "/appointment/delete";
+const UPDATESTATUSAPPOINTMENTROUTE = "/appointment/updateStatus";
 
 // cart routes
 const CREATECARTROUTE = "/cart/create";
@@ -67,6 +68,7 @@ export {
   CREATECARTROUTE,
   UPDATECARTROUTE,
   GETCARTBYIDROUTE,
+  UPDATESTATUSAPPOINTMENTROUTE,
   DELETECARTROUTE,
   UPDATEAPPOINTMENTROUTE,
   DELETEAPPOINTMENTROUTE,

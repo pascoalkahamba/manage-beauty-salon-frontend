@@ -17,6 +17,7 @@ import SkeletonComponent from "@/components/Skeleton";
 import { notifications } from "@mantine/notifications";
 import { creatAppointment, createCart, getServiceById } from "@/servers";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 
 interface ServiceCardProps {
   height: string;
@@ -40,6 +41,7 @@ export default function ServiceCardCarouusel({
   height,
 }: ServiceCardProps) {
   const { convertMinutes } = useTimeConverter();
+  const formatCurrency = useFormatCurrency(price);
   const queryClient = useQueryClient();
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
@@ -126,6 +128,17 @@ export default function ServiceCardCarouusel({
   };
 
   function appointmentService() {
+    if (currentUser.role !== "CLIENT") {
+      notifications.show({
+        title: "Acesso negado",
+        message:
+          "Você não tem permissão para agendar serviços. Por enquanto apenas clientes podem agendar serviços.",
+        color: "yellow",
+        position: "top-right",
+      });
+      return;
+    }
+
     setModal({
       type: "appointmentService",
       status: true,
@@ -184,11 +197,16 @@ export default function ServiceCardCarouusel({
         </Text>
 
         <Text className={classes.category} size="xs">
-          duração: {convertMinutes(duration)}
+          Duração: {convertMinutes(duration)}
         </Text>
       </div>
-      <Text className={classes.category} size="xs">
-        preço {price} mil kwanzas
+      <Text
+        fz="xl"
+        fw={700}
+        style={{ lineHeight: 1 }}
+        className="text-slate-200"
+      >
+        {formatCurrency}
       </Text>
 
       <Button variant="white" color="dark" onClick={appointmentService}>

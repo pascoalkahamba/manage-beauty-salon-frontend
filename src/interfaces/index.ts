@@ -1,4 +1,4 @@
-import { TRole, TStatus } from "@/@types";
+import { TOpenModal, TRole, TStatus } from "@/@types";
 
 export interface ICreateAccount {
   username: string;
@@ -44,6 +44,11 @@ export interface IAcademicLevel {
   id: number;
   name: string;
   description: string;
+}
+
+export interface IModalAtom {
+  type: TOpenModal;
+  status: boolean;
 }
 
 export interface IEmployee {
@@ -123,14 +128,32 @@ export interface ICreateAppointment {
 }
 export interface IAppointment {
   id: number;
-  date: string;
-  status: string;
+  date: Date;
+  hour: string;
+  status: TStatus;
   serviceId: number;
   employeeId: number;
   clientId: number;
   service: IService;
   employee: IEmployee;
   client: IClient;
+}
+
+export interface IAppointmentStatusResponse {
+  id: number;
+  clientId: number;
+  employeeId: number;
+  serviceId: number;
+  date: Date;
+  reason: string;
+  hour: string;
+  status: TStatus;
+  cartId: number | null;
+}
+export interface IUpdateAppointmentStatus {
+  id: number;
+  status: TStatus;
+  reason: string;
 }
 
 export interface IUpdateAppointment extends ICreateAppointment {

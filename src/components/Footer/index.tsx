@@ -6,6 +6,9 @@ import {
 } from "@tabler/icons-react";
 import { ActionIcon, Anchor, Group } from "@mantine/core";
 import classes from "@/components/Footer/styles.module.css";
+import { useQuery } from "@tanstack/react-query";
+import { getAllCategories } from "@/servers";
+import { ICurrentUser } from "@/interfaces";
 
 const links = [
   { link: "#", label: "Contact" },
@@ -16,16 +19,24 @@ const links = [
 ];
 
 export default function Footer() {
-  const items = links.map((link) => (
+  const currentUser = JSON.parse(
+    localStorage.getItem("userInfo") as string
+  ) as ICurrentUser;
+  const { data: allCategories } = useQuery({
+    queryKey: [`${currentUser?.id}-allCategories`],
+    queryFn: getAllCategories,
+  });
+
+  const items = allCategories?.map((category) => (
     <Anchor
       c="dimmed"
-      key={link.label}
-      href={link.link}
+      key={category.id}
+      href={category.name}
       lh={1}
       onClick={(event) => event.preventDefault()}
       size="sm"
     >
-      {link.label}
+      {category.name}
     </Anchor>
   ));
 

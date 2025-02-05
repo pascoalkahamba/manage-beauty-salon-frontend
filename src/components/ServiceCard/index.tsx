@@ -18,6 +18,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { creatAppointment, createCart, getServiceById } from "@/servers";
 import SkeletonComponent from "@/components/Skeleton";
 import { notifications } from "@mantine/notifications";
+import useTimeConverter from "@/hooks/useTimeConverter";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 
 interface ServiceCardProps {
   description: string;
@@ -48,6 +50,9 @@ export default function ServiceCard({
     queryKey: [`${currentUser.role}-${currentUser.id}-getOneService`],
     queryFn: () => getServiceById(serviceId),
   });
+
+  const { convertMinutes } = useTimeConverter();
+  const formatCurrency = useFormatCurrency(price);
 
   const queryClient = useQueryClient();
   const { mutate: mutateCreateCart } = useMutation({
@@ -123,6 +128,16 @@ export default function ServiceCard({
   };
 
   function appointmentService() {
+    if (currentUser.role !== "CLIENT") {
+      notifications.show({
+        title: "Acesso negado",
+        message:
+          "Você não tem permissão para agendar serviços. Por enquanto apenas clientes podem agendar serviços.",
+        color: "yellow",
+        position: "top-right",
+      });
+      return;
+    }
     setModal({
       type: "appointmentService",
       status: true,
@@ -183,7 +198,7 @@ export default function ServiceCard({
 
       <Card.Section className={classes.section} mt="md">
         <Text fz="sm" c="dimmed" className={classes.label}>
-          Duração: {duration} hora
+          Duração: {convertMinutes(duration)}
         </Text>
       </Card.Section>
 
@@ -191,7 +206,7 @@ export default function ServiceCard({
         <Group gap={30}>
           <div>
             <Text fz="xl" fw={700} style={{ lineHeight: 1 }}>
-              ${price}
+              {formatCurrency}
             </Text>
             <Text fz="sm" c="dimmed" fw={500} style={{ lineHeight: 1 }} mt={3}>
               pelo serviço

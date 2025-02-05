@@ -48,6 +48,16 @@ const loginSchema = zod.object({
   password: zod.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
 });
 
+const AppointmentSchema = zod.object({
+  id: zod.string(),
+  clientName: zod.string().min(1, "Client name is required"),
+  employeeName: zod.string().min(1, "Employee name is required"),
+  date: zod.date(),
+  time: zod.string(),
+  status: zod.string() as zod.ZodType<TStatus>,
+  notes: zod.string().optional(),
+});
+
 const bookingSchema = zod.object({
   employeeId: zod.string().min(1, "Funcionário é obrigatório"),
   date: zod
@@ -69,4 +79,4 @@ const bookingSchema = zod.object({
     }, "Horário deve estar entre 8:00 e 20:00"),
 });
 
-export { createAccountSchema, loginSchema, bookingSchema };
+export { createAccountSchema, loginSchema, bookingSchema, AppointmentSchema };

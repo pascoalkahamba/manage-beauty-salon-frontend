@@ -3,13 +3,11 @@
 import { useState } from "react";
 import {
   IconChevronDown,
-  IconHeart,
+  IconDeviceAnalytics,
   IconLogout,
-  IconMessage,
-  IconPlayerPause,
+  IconAdjustmentsFilled,
   IconSettings,
-  IconStar,
-  IconSwitchHorizontal,
+  IconCategory,
   IconTrash,
 } from "@tabler/icons-react";
 import cx from "clsx";
@@ -30,10 +28,13 @@ import { ICurrentUser } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
 import { getAllCategories, getUserById } from "@/servers";
 import CartHeaderIcon from "@/components/CartHeaderIcon";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Header() {
   const theme = useMantineTheme();
   const [opened, { toggle }] = useDisclosure(false);
+  const router = useRouter();
   const [userMenuOpened, setUserMenuOpened] = useState(false);
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
@@ -47,6 +48,11 @@ export default function Header() {
     queryKey: [`${currentUser.id}-allCategories`],
     queryFn: getAllCategories,
   });
+
+  function logout() {
+    router.push("/singIn");
+    // localStorage.removeItem("userInfo");
+  }
 
   const items = allCategories?.map((category) => (
     <Tabs.Tab value={`${category.id}`} key={category.id}>
@@ -93,70 +99,67 @@ export default function Header() {
               <Menu.Dropdown>
                 <Menu.Item
                   leftSection={
-                    <IconHeart
+                    <IconDeviceAnalytics
                       size={16}
                       color={theme.colors.red[6]}
                       stroke={1.5}
                     />
                   }
                 >
-                  Liked posts
+                  Serviços
                 </Menu.Item>
                 <Menu.Item
                   leftSection={
-                    <IconStar
+                    <IconCategory
                       size={16}
                       color={theme.colors.yellow[6]}
                       stroke={1.5}
                     />
                   }
                 >
-                  Saved posts
+                  Categorias
                 </Menu.Item>
                 <Menu.Item
                   leftSection={
-                    <IconMessage
+                    <IconAdjustmentsFilled
                       size={16}
                       color={theme.colors.blue[6]}
                       stroke={1.5}
                     />
                   }
                 >
-                  Your comments
+                  Agendamentos
                 </Menu.Item>
 
-                <Menu.Label>Settings</Menu.Label>
+                <Menu.Label>Definições</Menu.Label>
                 <Menu.Item
                   leftSection={<IconSettings size={16} stroke={1.5} />}
                 >
-                  Account settings
+                  <Link href={`/profile/${currentUser.id}/${currentUser.role}`}>
+                    Definições da conta
+                  </Link>
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<IconSwitchHorizontal size={16} stroke={1.5} />}
+                  onClick={logout}
+                  leftSection={<IconLogout size={16} stroke={1.5} />}
                 >
-                  Change account
-                </Menu.Item>
-                <Menu.Item leftSection={<IconLogout size={16} stroke={1.5} />}>
-                  Logout
+                  Terminar sessão
                 </Menu.Item>
 
                 <Menu.Divider />
 
-                <Menu.Label>Danger zone</Menu.Label>
-                <Menu.Item
-                  leftSection={<IconPlayerPause size={16} stroke={1.5} />}
-                >
-                  Pause subscription
-                </Menu.Item>
+                <Menu.Label>Zona de risco</Menu.Label>
                 <Menu.Item
                   color="red"
                   leftSection={<IconTrash size={16} stroke={1.5} />}
                 >
-                  Delete account
+                  Eliminar conta
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
-            <CartHeaderIcon itemCount={user?.cart?.appointment.length} />
+            {user?.role === "CLIENT" && (
+              <CartHeaderIcon itemCount={user?.cart?.appointment.length} />
+            )}
           </Group>
         </Group>
       </Container>
