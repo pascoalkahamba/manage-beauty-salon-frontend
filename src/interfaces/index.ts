@@ -53,7 +53,7 @@ export interface IUpdateUserProfile {
   cellphone: string;
   categoriesIds?: number[];
   role: TRole;
-  academicLevelId: number;
+  academicLevelId?: number;
   servicesIds?: number[];
   photo: IPicture;
   bio: string;

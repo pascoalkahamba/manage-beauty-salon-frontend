@@ -8,50 +8,58 @@ import {
   Avatar,
   Center,
   MultiSelect,
+  PasswordInput,
+  Textarea,
 } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
 import { z } from "zod";
 import { IconUpload } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
-import { IModalAtom } from "@/interfaces";
+import { ICurrentUser, IModalAtom } from "@/interfaces";
 import {
   getAllAcademicLevels,
   getAllCategories,
   getAllServices,
 } from "@/servers";
 import { useQuery } from "@tanstack/react-query";
+import CustomButton from "../CustomButton";
 
 // Update the schema to include photo
 const profileSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  phone: z.string().regex(/^\d{9}$/, "Phone number must be exactly 9 digits"),
-  specialties: z.string().min(1, "Please select a specialty"),
+  username: z
+    .string()
+    .min(6, "Nome do usuário deve ter pelo menos 6 caracteres."),
+  email: z.string().email("Email inválido."),
+  bio: z
+    .string()
+    .min(12, "Descrição deve ter no minimo 12 caracteres.")
+    .optional(),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres."),
+  cellphone: z
+    .string()
+    .regex(/^\d{9}$/, "Numero do telefone deve ter 9 digitos."),
   servicesIds: z
     .number()
     .array()
-    .min(1, "Please select at least one service")
+    .min(1, "Selecione pelo menos um serviço.")
     .optional(),
   categoriesIds: z
     .number()
     .array()
-    .min(1, "Please select at least one service")
+    .min(1, "Selecione pelo menos uma categoria.")
     .optional(),
-  education: z.string().min(3, "Education must be at least 3 characters"),
-  academicLevelId: z.string().min(1, "Please select an academic level"),
-  role: z.string().min(3, "Role must be at least 3 characters"),
-  availability: z.string().min(1, "Please select availability"),
-  photo: z.any().optional(), // File upload is optional
+  academicLevelId: z.string().min(1, "Selecione um nivel academico."),
+  photoUrl: z.string().optional(), // File upload is optional
 });
 
-type ProfileFormValues = z.infer<typeof profileSchema>;
+type IUpdateUserProfile = z.infer<typeof profileSchema>;
 
 interface EditProfileModalProps {
   opened: IModalAtom;
   onClose: () => void;
-  initialData: ProfileFormValues & { photoUrl?: string }; // Add photoUrl to show current photo
-  onSubmit: (values: ProfileFormValues) => void;
+  isPending: boolean;
+  initialData: IUpdateUserProfile & { photoUrl?: string }; // Add photoUrl to show current photo
+  onSubmit: (values: IUpdateUserProfile) => void;
 }
 
 export default function EditProfileModal({
@@ -59,6 +67,7 @@ export default function EditProfileModal({
   onClose,
   initialData,
   onSubmit,
+  isPending,
 }: EditProfileModalProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     initialData.photoUrl || null
@@ -68,7 +77,9 @@ export default function EditProfileModal({
     queryKey: ["getAllServices"],
     queryFn: getAllServices,
   });
-
+  const currentUser = JSON.parse(
+    localStorage.getItem("userInfo") as string
+  ) as ICurrentUser;
   const {
     data: categoryData,
 
@@ -109,15 +120,20 @@ export default function EditProfileModal({
     );
   }, [academicLevelData]);
 
-  const form = useForm<ProfileFormValues>({
+  const form = useForm<IUpdateUserProfile>({
     initialValues: initialData,
     validate: zodResolver(profileSchema),
   });
 
-  const handleSubmit = (values: ProfileFormValues) => {
+  const handleSubmit = (values: IUpdateUserProfile) => {
+    console.log("values", values);
+
     onSubmit(values);
-    onClose();
-    form.reset();
+
+    if (!isPending) {
+      onClose();
+      form.reset();
+    }
   };
 
   const handleFileChange = (file: File | null) => {
@@ -154,85 +170,109 @@ export default function EditProfileModal({
           <Center>
             <Avatar src={previewUrl} size={120} radius="md" className="mb-4" />
           </Center>
-
           <FileInput
             label="Carregar nova foto"
             placeholder="Upload new photo"
+            name="file"
+            itemType="file"
             accept="image/png,image/jpeg,image/jpg"
             icon={<IconUpload size={16} />}
             onChange={handleFileChange}
           />
-
           <TextInput
+            required
             label="Nome"
             placeholder="Digete seu nome"
-            {...form.getInputProps("name")}
+            {...form.getInputProps("username")}
           />
-
+          <Textarea
+            required
+            label="Descrição"
+            placeholder="Digete uma descrição"
+            {...form.getInputProps("bio")}
+          />
           <TextInput
+            required
             label="Email"
-            placeholder="seu.email@example.com"
+            placeholder="seu.email@examplo.com"
             {...form.getInputProps("email")}
           />
-
           <TextInput
+            required
             label="Telefone"
             placeholder="941900324"
-            {...form.getInputProps("phone")}
+            {...form.getInputProps("cellphone")}
           />
-          <TextInput
+          <PasswordInput
+            required
             label="Senha"
-            placeholder="********"
-            {...form.getInputProps("password")}
-          />
-
-          <MultiSelect
-            label="Escolhe suas categorias"
-            data={allCategories?.map((category) => ({
-              value: category.value.toString(),
-              label: category.label,
-            }))}
-            placeholder="Escohe suas categorias"
-            value={form.values.categoriesIds?.map((id) => id.toString())}
-            nothingFoundMessage="Nenhuma categoria encontrada"
-            onChange={(value) =>
-              form.setFieldValue("categoriesIds", value.map(Number))
+            placeholder="Sua nova senha"
+            value={form.values.password}
+            onChange={(event) =>
+              form.setFieldValue("password", event.currentTarget.value)
             }
-            clearable
-            required
-            searchable
+            radius="md"
+            error={form.errors.password}
           />
-
-          <MultiSelect
-            label="Escolhe seus serviços"
-            data={allServices?.map((service) => ({
-              value: service.value.toString(),
-              label: service.label,
-            }))}
-            placeholder="Escolhe seus serviços"
-            value={form.values.servicesIds?.map((id) => id.toString())}
-            onChange={(value) =>
-              form.setFieldValue("servicesIds", value.map(Number))
-            }
-            nothingFoundMessage="Nenhum serviço encontrado"
-            clearable
-            searchable
-            required
-          />
-          <Select
-            label="Escolhe seu nível acadêmico"
-            placeholder="Escolhe seu nível acadêmico"
-            data={allAcademicLevels}
-            value={form.values.academicLevelId}
-            nothingFoundMessage="Nenhum nível acadêmico encontrado"
-            onChange={(value) =>
-              form.setFieldValue("academicLevelId", `${value}`)
-            }
-          />
-
-          <Button type="submit" fullWidth>
-            Salvar alterações
-          </Button>
+          {currentUser.role === "CLIENT" && (
+            <MultiSelect
+              label="Escolhe suas categorias"
+              data={allCategories?.map((category) => ({
+                value: category.value.toString(),
+                label: category.label,
+              }))}
+              placeholder="Escohe suas categorias"
+              value={form.values.categoriesIds?.map((id) => id.toString())}
+              nothingFoundMessage="Nenhuma categoria encontrada"
+              onChange={(value) =>
+                form.setFieldValue("categoriesIds", value.map(Number))
+              }
+              clearable
+              required
+              searchable
+            />
+          )}
+          {currentUser.role === "EMPLOYEE" && (
+            <MultiSelect
+              label="Escolhe seus serviços"
+              data={allServices?.map((service) => ({
+                value: service.value.toString(),
+                label: service.label,
+              }))}
+              placeholder="Escolhe seus serviços"
+              value={form.values.servicesIds?.map((id) => id.toString())}
+              onChange={(value) =>
+                form.setFieldValue("servicesIds", value.map(Number))
+              }
+              nothingFoundMessage="Nenhum serviço encontrado"
+              clearable
+              searchable
+              required
+            />
+          )}{" "}
+          {currentUser.role === "EMPLOYEE" && (
+            <Select
+              label="Escolhe seu nível acadêmico"
+              placeholder="Escolhe seu nível acadêmico"
+              data={allAcademicLevels}
+              value={form.values.academicLevelId}
+              nothingFoundMessage="Nenhum nível acadêmico encontrado"
+              onChange={(value) =>
+                form.setFieldValue("academicLevelId", `${value}`)
+              }
+            />
+          )}{" "}
+          <div className="flex items-center gap-6 w-full">
+            <CustomButton
+              type="submit"
+              target="Salvar"
+              targetPedding="Salvando..."
+              isPending={isPending}
+            />
+            <Button color="red" onClick={onClose}>
+              Cancelar
+            </Button>
+          </div>
         </Stack>
       </form>
     </Modal>

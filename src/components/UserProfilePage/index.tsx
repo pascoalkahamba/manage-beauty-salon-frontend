@@ -16,14 +16,16 @@ import {
   IconUserCheck,
 } from "@tabler/icons-react";
 import { TRole } from "@/@types";
-import { useQuery } from "@tanstack/react-query";
-import { getUserById } from "@/servers";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUserById, updateUserProfile } from "@/servers";
 import SkeletonComponent from "@/components/Skeleton";
 import { showNameOfCurrentUser } from "@/utils";
 import EmployeeAppointmentsModal from "@/components/EmployeeAppointmentsModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
+import { IUpdateUserProfile } from "@/interfaces";
+import { notifications } from "@mantine/notifications";
 
 interface UserProfilePageProps {
   id: number;
@@ -32,19 +34,62 @@ interface UserProfilePageProps {
 
 export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   const [modalOpened, setModalOpened] = useAtom(modalAtom);
-  const initialData = {
-    name: "Antonio Eduardo",
-    email: "antonioEduardo25@gmail.com",
-    phone: "941900324",
-    specialties: "corte-frances",
-    education: "Licenciado em Administração de Empresas",
-    role: "Funcionário",
-    availability: "todos-os-dias",
-  };
+  const queryClient = useQueryClient();
 
-  const handleSubmit = (values: any) => {
-    console.log("Updated values:", values);
-    // Here you would typically make an API call to update the profile
+  const formdata = new FormData();
+  const {
+    mutate,
+    isPending: isPendingProfile,
+    isError,
+  } = useMutation({
+    mutationFn: (values: IUpdateUserProfile) => updateUserProfile(values),
+    onSuccess: () => {
+      setModalOpened({
+        type: "editProfileInfo",
+        status: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: [`${role}-${id}-getOneUser`],
+      });
+      notifications.show({
+        title: "Atualização de perfil",
+        message: "Perfil atualizado com sucesso!",
+        color: "green",
+        position: "top-right",
+      });
+    },
+    onError: (error) => {
+      console.log(error);
+      notifications.show({
+        title: "Atualização de perfil",
+        message: "Perfil não atualizado, tente novamente mais tarde!",
+        color: "red",
+        position: "top-right",
+      });
+    },
+  });
+
+  const handleSubmit = async (values: IUpdateUserProfile) => {
+    let photoData = values.photo;
+
+    if (values.photo instanceof File) {
+      // Convert file to base64
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(values.photo);
+      });
+      photoData = base64;
+    }
+
+    const initialValues = {
+      ...values,
+      id: id,
+      role: role,
+      photo: photoData,
+    };
+
+    mutate(initialValues);
   };
   const {
     data: user,
@@ -70,6 +115,20 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
         Algo deu errado tente novamente: Usuário não encontrado
       </p>
     );
+
+  const initialData: IUpdateUserProfile = {
+    id: id,
+    role: role,
+    username: user.username,
+    email: user.email,
+    cellphone: user.cellphone,
+    servicesIds: user.services?.map((service) => service.id),
+    academicLevelId: user.academicLevel?.id,
+    password: "",
+    categoriesIds: user.categories?.map((category) => category.id),
+    bio: user.profile.bio,
+    photo: user.profile.photo,
+  };
 
   const availability = user.appointments.some(
     (appointment) => appointment.status === "CONFIRMED"
@@ -112,7 +171,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
               <Text>
                 Especialidades:{" "}
                 {user?.services?.map((service) => (
-                  <span key={service.id}>{service.name}</span>
+                  <span key={service.id}>{service.name}, </span>
                 ))}
               </Text>
             </Group>
@@ -167,6 +226,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
             onClose={() =>
               setModalOpened({ type: "editProfileInfo", status: false })
             }
+            isPending={isPendingProfile}
             initialData={initialData}
             onSubmit={handleSubmit}
           />
