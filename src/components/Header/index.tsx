@@ -14,6 +14,7 @@ import cx from "clsx";
 import {
   Avatar,
   Burger,
+  Button,
   Container,
   Group,
   Menu,
@@ -30,6 +31,7 @@ import { getAllCategories, getUserById } from "@/servers";
 import CartHeaderIcon from "@/components/CartHeaderIcon";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import CartModal, { CartAppointment } from "@/components/CartModal";
 
 export default function Header() {
   const theme = useMantineTheme();
@@ -40,7 +42,7 @@ export default function Header() {
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
   const { data: user } = useQuery({
-    queryKey: [`${currentUser.id}-${currentUser.role}-getOneUser`],
+    queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
     queryFn: () => getUserById(currentUser.id, currentUser.role),
   });
 
@@ -50,7 +52,7 @@ export default function Header() {
   });
 
   function logout() {
-    router.push("/singIn");
+    router.push("/signIn");
     // localStorage.removeItem("userInfo");
   }
 
@@ -60,10 +62,78 @@ export default function Header() {
     </Tabs.Tab>
   ));
 
+  const [modalOpened, setModalOpened] = useState(false);
+
+  const sampleAppointments: CartAppointment[] = [
+    {
+      id: "1",
+      serviceName: "Hair Coloring",
+      employeeName: "John Smith",
+      date: new Date(),
+      time: "14:30",
+      price: 150,
+      duration: 120,
+    },
+    {
+      id: "2",
+      serviceName: "Haircut",
+      employeeName: "Jane Doe",
+      date: new Date(),
+      time: "16:30",
+      price: 80,
+      duration: 60,
+    },
+  ];
+
+  const handleDeleteAppointment = async (id: string) => {
+    // Implement API call
+    console.log(`Deleting appointment ${id}`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
+  const handleUpdateAppointment = async (
+    id: string,
+    date: Date,
+    time: string
+  ) => {
+    // Implement API call
+    console.log(`Updating appointment ${id} to ${date} ${time}`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
+  const handleScheduleAppointment = async (id: string) => {
+    // Implement API call
+    console.log(`Scheduling appointment ${id}`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
+  const handleScheduleAll = async () => {
+    // Implement API call
+    console.log("Scheduling all appointments");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
+  const handleClearCart = async () => {
+    // Implement API call
+    console.log("Clearing cart");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
   console.log("user", user);
   return (
     <div className={classes.header}>
       <Container className={classes.mainSection} size="md">
+        <CartModal
+          opened={modalOpened}
+          onClose={() => setModalOpened(false)}
+          appointments={sampleAppointments}
+          onDeleteAppointment={handleDeleteAppointment}
+          onUpdateAppointment={handleUpdateAppointment}
+          onScheduleAppointment={handleScheduleAppointment}
+          onScheduleAll={handleScheduleAll}
+          onClearCart={handleClearCart}
+        />
+
         <Group justify="space-between">
           <h1>Salao de Beleza</h1>
           <Burger opened={opened} onClick={toggle} hiddenFrom="xs" size="sm" />
@@ -158,7 +228,10 @@ export default function Header() {
               </Menu.Dropdown>
             </Menu>
             {user?.role === "CLIENT" && (
-              <CartHeaderIcon itemCount={user?.cart?.appointment.length} />
+              <CartHeaderIcon
+                itemCount={user?.cart?.appointment.length}
+                setModalOpened={setModalOpened}
+              />
             )}
           </Group>
         </Group>

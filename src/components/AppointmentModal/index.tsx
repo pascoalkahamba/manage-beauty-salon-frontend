@@ -1,7 +1,6 @@
 // types.ts
 
 // AppointmentModal.tsx
-import { useState } from "react";
 import {
   Modal,
   Button,

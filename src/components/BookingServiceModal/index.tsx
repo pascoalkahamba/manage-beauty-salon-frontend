@@ -233,6 +233,7 @@ export function BookingModal({
                 <Group grow>
                   <Button
                     variant="light"
+                    className="p-1"
                     onClick={() => form.onSubmit(handleAddToCart)()}
                   >
                     Adicionar ao Carrinho

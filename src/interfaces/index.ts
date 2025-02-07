@@ -55,9 +55,14 @@ export interface IUpdateUserProfile {
   role: TRole;
   academicLevelId?: number;
   servicesIds?: number[];
-  photo: IPicture;
+  photo: Blob;
   bio: string;
   password: string;
+}
+
+export interface IGetOneUser {
+  id: number;
+  role: TRole;
 }
 
 export interface IModalAtom {

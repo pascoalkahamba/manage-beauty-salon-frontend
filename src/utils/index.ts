@@ -1,4 +1,5 @@
 import { TRole, TStatus } from "@/@types";
+import { ICurrentUser, IGetOneUser } from "@/interfaces";
 
 const EMPLOYEE_CODE_REGEX =
   /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
@@ -16,6 +17,16 @@ function showNameOfCurrentUser(role: TRole) {
   }
 }
 
+function currentUserCanManagerProfile(
+  { id, role }: IGetOneUser,
+  currentUser: ICurrentUser
+) {
+  if (currentUser.role === "MANAGER") return true;
+  if (role === currentUser.role && +id === currentUser.id) return true;
+
+  return false;
+}
+
 function showStatusInPortuguese(status: TStatus) {
   switch (status) {
     case "PENDING":
@@ -31,4 +42,9 @@ function showStatusInPortuguese(status: TStatus) {
   }
 }
 
-export { EMPLOYEE_CODE_REGEX, showNameOfCurrentUser, showStatusInPortuguese };
+export {
+  EMPLOYEE_CODE_REGEX,
+  showNameOfCurrentUser,
+  showStatusInPortuguese,
+  currentUserCanManagerProfile,
+};

@@ -12,7 +12,6 @@ import {
   Textarea,
 } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
-import { z } from "zod";
 import { IconUpload } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { ICurrentUser, IModalAtom } from "@/interfaces";
@@ -23,36 +22,10 @@ import {
 } from "@/servers";
 import { useQuery } from "@tanstack/react-query";
 import CustomButton from "../CustomButton";
+import { IUpdateUserProfile } from "@/@types";
+import { profileSchema } from "@/schemas";
 
 // Update the schema to include photo
-const profileSchema = z.object({
-  username: z
-    .string()
-    .min(6, "Nome do usuário deve ter pelo menos 6 caracteres."),
-  email: z.string().email("Email inválido."),
-  bio: z
-    .string()
-    .min(12, "Descrição deve ter no minimo 12 caracteres.")
-    .optional(),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres."),
-  cellphone: z
-    .string()
-    .regex(/^\d{9}$/, "Numero do telefone deve ter 9 digitos."),
-  servicesIds: z
-    .number()
-    .array()
-    .min(1, "Selecione pelo menos um serviço.")
-    .optional(),
-  categoriesIds: z
-    .number()
-    .array()
-    .min(1, "Selecione pelo menos uma categoria.")
-    .optional(),
-  academicLevelId: z.string().min(1, "Selecione um nivel academico."),
-  photoUrl: z.string().optional(), // File upload is optional
-});
-
-type IUpdateUserProfile = z.infer<typeof profileSchema>;
 
 interface EditProfileModalProps {
   opened: IModalAtom;

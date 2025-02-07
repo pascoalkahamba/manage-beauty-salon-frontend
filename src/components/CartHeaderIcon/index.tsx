@@ -1,10 +1,20 @@
 import { IconShoppingCart } from "@tabler/icons-react";
 import { Group, Box, Text } from "@mantine/core";
+import { Dispatch, SetStateAction } from "react";
 
-const CartHeaderIcon = ({ itemCount = 0 }) => {
+interface CartHeaderIconProps {
+  setModalOpened: Dispatch<SetStateAction<boolean>>;
+  itemCount: number | undefined;
+}
+
+const CartHeaderIcon = ({
+  itemCount = 0,
+  setModalOpened,
+}: CartHeaderIconProps) => {
   return (
     <Group gap={2} style={{ position: "relative", cursor: "pointer" }}>
       <Box
+        onClick={() => setModalOpened(true)}
         style={{
           position: "absolute",
           top: -5,

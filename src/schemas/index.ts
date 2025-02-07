@@ -48,6 +48,36 @@ const loginSchema = zod.object({
   password: zod.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
 });
 
+const profileSchema = zod.object({
+  username: zod
+    .string()
+    .min(6, "Nome do usuário deve ter pelo menos 6 caracteres."),
+  email: zod.string().email("Email inválido."),
+  bio: zod
+    .string()
+    .min(12, "Descrição deve ter no minimo 12 caracteres.")
+    .optional(),
+  password: zod.string().min(6, "Senha deve ter pelo menos 6 caracteres."),
+  cellphone: zod
+    .string()
+    .regex(/^\d{9}$/, "Numero do telefone deve ter 9 digitos."),
+  servicesIds: zod
+    .number()
+    .array()
+    .min(1, "Selecione pelo menos um serviço.")
+    .optional(),
+  categoriesIds: zod
+    .number()
+    .array()
+    .min(1, "Selecione pelo menos uma categoria.")
+    .optional(),
+  academicLevelId: zod
+    .string()
+    .min(1, "Selecione um nivel academico.")
+    .optional(),
+  photoUrl: zod.string().optional(), // File upload is optional
+});
+
 const AppointmentSchema = zod.object({
   id: zod.string(),
   clientName: zod.string().min(1, "Client name is required"),
@@ -79,4 +109,10 @@ const bookingSchema = zod.object({
     }, "Horário deve estar entre 8:00 e 20:00"),
 });
 
-export { createAccountSchema, loginSchema, bookingSchema, AppointmentSchema };
+export {
+  createAccountSchema,
+  loginSchema,
+  bookingSchema,
+  AppointmentSchema,
+  profileSchema,
+};

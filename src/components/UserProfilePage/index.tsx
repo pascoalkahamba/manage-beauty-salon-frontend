@@ -10,21 +10,17 @@ import {
   Stack,
   Divider,
 } from "@mantine/core";
-import {
-  IconClock,
-  IconCalendarEvent,
-  IconUserCheck,
-} from "@tabler/icons-react";
+import { IconClock, IconCalendarEvent } from "@tabler/icons-react";
 import { TRole } from "@/@types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserById, updateUserProfile } from "@/servers";
 import SkeletonComponent from "@/components/Skeleton";
-import { showNameOfCurrentUser } from "@/utils";
+import { currentUserCanManagerProfile, showNameOfCurrentUser } from "@/utils";
 import EmployeeAppointmentsModal from "@/components/EmployeeAppointmentsModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
-import { IUpdateUserProfile } from "@/interfaces";
+import { ICurrentUser, IUpdateUserProfile } from "@/interfaces";
 import { notifications } from "@mantine/notifications";
 
 interface UserProfilePageProps {
@@ -36,12 +32,13 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   const [modalOpened, setModalOpened] = useAtom(modalAtom);
   const queryClient = useQueryClient();
 
-  const formdata = new FormData();
-  const {
-    mutate,
-    isPending: isPendingProfile,
-    isError,
-  } = useMutation({
+  const currentUser = JSON.parse(
+    localStorage.getItem("userInfo") as string
+  ) as ICurrentUser;
+
+  const heCan = currentUserCanManagerProfile({ id, role }, currentUser);
+
+  const { mutate, isPending: isPendingProfile } = useMutation({
     mutationFn: (values: IUpdateUserProfile) => updateUserProfile(values),
     onSuccess: () => {
       setModalOpened({
@@ -70,7 +67,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   });
 
   const handleSubmit = async (values: IUpdateUserProfile) => {
-    let photoData = values.photo;
+    let photoData: Blob = values.photo;
 
     if (values.photo instanceof File) {
       // Convert file to base64
@@ -79,7 +76,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
         reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(values.photo);
       });
-      photoData = base64;
+      photoData = base64 as Blob;
     }
 
     const initialValues = {
@@ -127,7 +124,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     password: "",
     categoriesIds: user.categories?.map((category) => category.id),
     bio: user.profile.bio,
-    photo: user.profile.photo,
+    photo: user.profile.photo as unknown as Blob,
   };
 
   const availability = user.appointments.some(
@@ -135,7 +132,12 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   );
 
   return (
-    <div className="flex items-center gap-4 w-full">
+    <div
+      className="flex items-center gap-4 w-full"
+      data-aos="fade-right"
+      data-aos-delay="200"
+      data-duration="200"
+    >
       <div className="w-3/4">
         <Card shadow="md" radius="md" p="md">
           <Stack align="center" spacing="md">
@@ -145,14 +147,6 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
             <Text>{user?.cellphone}</Text>
             <Text>{user?.academicLevel?.name}</Text>
             <Text>{showNameOfCurrentUser(user?.role)}</Text>
-            <Group>
-              <IconUserCheck size={20} />
-              <Text> 23 avaliações positivas</Text>
-            </Group>
-            <Group>
-              <IconUserCheck size={20} />
-              <Text> 23 avaliações negativas </Text>
-            </Group>
           </Stack>
         </Card>
       </div>
@@ -166,48 +160,60 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
               <IconClock size={20} />
               <Text>Disponível: Todos os dias</Text>
             </Group>
-            <Group>
-              <IconCalendarEvent size={20} />
-              <Text>
+            {role === "EMPLOYEE" ? (
+              <Group>
+                <IconCalendarEvent size={20} />
                 Especialidades:{" "}
                 {user?.services?.map((service) => (
-                  <span key={service.id}>{service.name}, </span>
+                  <Text key={service.id}>{service.name},</Text>
                 ))}
-              </Text>
-            </Group>
+              </Group>
+            ) : (
+              <Group>
+                <IconCalendarEvent size={20} />
+                Preferências:{" "}
+                {user?.categories?.map((category) => (
+                  <Text key={category.id}> {category.name}</Text>
+                ))}
+              </Group>
+            )}
             <Divider />
             <Title order={3}>Sobre Mim</Title>
             <Text>{user?.profile.bio}</Text>
             <Divider />
             <div className="flex gap-2 items-center w-full">
-              <Button
-                variant="light"
-                color="orange"
-                onClick={() =>
-                  setModalOpened({
-                    type: "listOfAppointments",
-                    status: true,
-                  })
-                }
-              >
-                Agendamentos
-              </Button>
-              <Button
-                variant="light"
-                color="blue"
-                onClick={() =>
-                  setModalOpened({ type: "editProfileInfo", status: true })
-                }
-              >
-                Editar
-              </Button>
+              {heCan && (
+                <Button
+                  variant="light"
+                  color="orange"
+                  onClick={() =>
+                    setModalOpened({
+                      type: "listOfAppointments",
+                      status: true,
+                    })
+                  }
+                >
+                  Agendamentos
+                </Button>
+              )}
+              {heCan && (
+                <Button
+                  variant="light"
+                  color="blue"
+                  onClick={() =>
+                    setModalOpened({ type: "editProfileInfo", status: true })
+                  }
+                >
+                  Editar
+                </Button>
+              )}
               {availability ? (
-                <Button variant="light" color="red">
+                <Button variant="light" color="red" fullWidth={!heCan}>
                   Ocupado
                 </Button>
               ) : (
-                <Button variant="light" color="green">
-                  Disponivel
+                <Button variant="light" color="green" fullWidth={!heCan}>
+                  {currentUser.role === "EMPLOYEE" ? "Disponível" : "Activo"}
                 </Button>
               )}
             </div>

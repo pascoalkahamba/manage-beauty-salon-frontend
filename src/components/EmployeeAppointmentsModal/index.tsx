@@ -15,12 +15,13 @@ import {
 import { DatePickerInput } from "@mantine/dates";
 import { TStatus } from "@/@types";
 import AppointmentModal from "@/components/AppointmentModal";
-import { IAppointment, IModalAtom } from "@/interfaces";
+import { IAppointment, ICurrentUser, IModalAtom } from "@/interfaces";
 import useTimeConverter from "@/hooks/useTimeConverter";
 import { formatCurrency } from "@/utils/formatters";
 import { showStatusInPortuguese } from "@/utils";
 import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
+import Link from "next/link";
 
 interface EmployeeAppointmentsModalProps {
   opened: IModalAtom;
@@ -38,6 +39,9 @@ export default function EmployeeAppointmentsModal({
   const [selectedAppointment, setSelectedAppointment] =
     useState<IAppointment | null>(null);
   const [modalOpened, SetModalOpened] = useAtom(modalAtom);
+  const currentUser = JSON.parse(
+    localStorage.getItem("userInfo") as string
+  ) as ICurrentUser;
 
   const { convertMinutes } = useTimeConverter();
 
@@ -51,12 +55,14 @@ export default function EmployeeAppointmentsModal({
     return colors[status];
   };
 
+  const searchName = currentUser.role === "EMPLOYEE" ? "client" : "employee";
+
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
-      appointment.client.username
+      appointment?.[searchName]?.username
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      appointment.service.name
+      appointment.service?.name
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
 
@@ -67,7 +73,6 @@ export default function EmployeeAppointmentsModal({
 
     return matchesSearch && matchesDate;
   });
-
   const handleViewDetails = (appointment: IAppointment) => {
     setSelectedAppointment(appointment);
     SetModalOpened({ type: "updateAppointmentStatus", status: true });
@@ -110,10 +115,14 @@ export default function EmployeeAppointmentsModal({
               <thead style={{ textAlign: "center" }}>
                 <tr>
                   <th>Data e hora</th>
-                  <th>Cliente</th>
+                  <th>
+                    {currentUser.role === "EMPLOYEE"
+                      ? "Clientes"
+                      : "Funcionários"}
+                  </th>
                   <th>Serviço</th>
                   <th>Estato</th>
-                  <th>Acções</th>
+                  {currentUser.role === "EMPLOYEE" && <th>Acções</th>}
                 </tr>
               </thead>
               <tbody style={{ textAlign: "center" }}>
@@ -122,7 +131,19 @@ export default function EmployeeAppointmentsModal({
                     <td>
                       {formatDateTime(appointment.date, appointment.hour)}
                     </td>
-                    <td>{appointment.client.username}</td>
+                    <td onClick={onClose}>
+                      {currentUser.role === "EMPLOYEE" ? (
+                        <Link href={`/profile/${appointment.client.id}/CLIENT`}>
+                          {appointment.client.username}
+                        </Link>
+                      ) : (
+                        <Link
+                          href={`/profile/${appointment.employee.id}/${appointment.employee.role}`}
+                        >
+                          {appointment.employee.username}
+                        </Link>
+                      )}
+                    </td>
                     <td>
                       <Text size="sm">{appointment.service.name}</Text>
                       <Text size="xs" color="dimmed">
@@ -135,15 +156,17 @@ export default function EmployeeAppointmentsModal({
                         {showStatusInPortuguese(appointment.status)}
                       </Badge>
                     </td>
-                    <td>
-                      <Button
-                        variant="subtle"
-                        size="xs"
-                        onClick={() => handleViewDetails(appointment)}
-                      >
-                        Ver detalhes
-                      </Button>
-                    </td>
+                    {currentUser.role === "EMPLOYEE" && (
+                      <td>
+                        <Button
+                          variant="subtle"
+                          size="xs"
+                          onClick={() => handleViewDetails(appointment)}
+                        >
+                          Ver detalhes
+                        </Button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
