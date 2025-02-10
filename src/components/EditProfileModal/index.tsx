@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Modal,
   Button,
@@ -101,12 +103,11 @@ export default function EditProfileModal({
   const handleSubmit = (values: IUpdateUserProfile) => {
     console.log("values", values);
 
-    onSubmit(values);
-
     if (!isPending) {
       onClose();
       form.reset();
     }
+    onSubmit(values);
   };
 
   const handleFileChange = (file: File | null) => {

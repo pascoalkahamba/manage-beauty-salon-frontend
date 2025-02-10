@@ -25,7 +25,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "@/components/Header/styles.module.css";
-import { ICurrentUser } from "@/interfaces";
+import { IAppointment, ICurrentUser } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
 import { getAllCategories, getUserById } from "@/servers";
 import CartHeaderIcon from "@/components/CartHeaderIcon";
@@ -61,8 +61,6 @@ export default function Header() {
       {category.name}
     </Tabs.Tab>
   ));
-
-  const [modalOpened, setModalOpened] = useState(false);
 
   const sampleAppointments: CartAppointment[] = [
     {
@@ -123,19 +121,21 @@ export default function Header() {
   return (
     <div className={classes.header}>
       <Container className={classes.mainSection} size="md">
-        <CartModal
-          opened={modalOpened}
-          onClose={() => setModalOpened(false)}
-          appointments={sampleAppointments}
-          onDeleteAppointment={handleDeleteAppointment}
-          onUpdateAppointment={handleUpdateAppointment}
-          onScheduleAppointment={handleScheduleAppointment}
-          onScheduleAll={handleScheduleAll}
-          onClearCart={handleClearCart}
-        />
-
+        {user && (
+          <CartModal
+            // appointments={sampleAppointments}
+            appointments={user?.cart?.appointment as unknown as IAppointment[]}
+            onDeleteAppointment={handleDeleteAppointment}
+            onUpdateAppointment={handleUpdateAppointment}
+            onScheduleAppointment={handleScheduleAppointment}
+            onScheduleAll={handleScheduleAll}
+            onClearCart={handleClearCart}
+          />
+        )}
         <Group justify="space-between">
-          <h1>Salao de Beleza</h1>
+          <h1>
+            <Link href="/dashboard">Salao de Beleza</Link>
+          </h1>
           <Burger opened={opened} onClick={toggle} hiddenFrom="xs" size="sm" />
           <Group justify="space-between">
             <Menu
@@ -228,10 +228,7 @@ export default function Header() {
               </Menu.Dropdown>
             </Menu>
             {user?.role === "CLIENT" && (
-              <CartHeaderIcon
-                itemCount={user?.cart?.appointment.length}
-                setModalOpened={setModalOpened}
-              />
+              <CartHeaderIcon itemCount={user?.cart?.appointment.length} />
             )}
           </Group>
         </Group>

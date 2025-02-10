@@ -131,6 +131,13 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     (appointment) => appointment.status === "CONFIRMED"
   );
 
+  const openListOfAppointments = () => {
+    setModalOpened({
+      type: "listOfAppointments",
+      status: true,
+    });
+  };
+
   return (
     <div
       className="flex items-center gap-4 w-full"
@@ -186,12 +193,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
                 <Button
                   variant="light"
                   color="orange"
-                  onClick={() =>
-                    setModalOpened({
-                      type: "listOfAppointments",
-                      status: true,
-                    })
-                  }
+                  onClick={openListOfAppointments}
                 >
                   Agendamentos
                 </Button>
@@ -213,14 +215,13 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
                 </Button>
               ) : (
                 <Button variant="light" color="green" fullWidth={!heCan}>
-                  {currentUser.role === "EMPLOYEE" ? "Disponível" : "Activo"}
+                  {role === "EMPLOYEE" ? "Disponível" : "Activo"}
                 </Button>
               )}
             </div>
           </Stack>
 
           <EmployeeAppointmentsModal
-            opened={modalOpened}
             onClose={() =>
               setModalOpened({ type: "listOfAppointments", status: false })
             }

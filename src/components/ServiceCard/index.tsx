@@ -9,14 +9,15 @@ import {
   ICreateCart,
   ICurrentUser,
   IDataForCreateAppointment,
+  IEmployee,
   IPicture,
+  IService,
 } from "@/interfaces";
 import { BookingModal } from "@/components/BookingServiceModal";
-import { useSetAtom } from "jotai";
-import { modalAtom } from "@/storage/atom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { creatAppointment, createCart, getServiceById } from "@/servers";
-import SkeletonComponent from "@/components/Skeleton";
+import { useAtom, useSetAtom } from "jotai";
+import { currentServiceAtom, modalAtom } from "@/storage/atom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { creatAppointment, createCart } from "@/servers";
 import { notifications } from "@mantine/notifications";
 import useTimeConverter from "@/hooks/useTimeConverter";
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
@@ -26,6 +27,7 @@ interface ServiceCardProps {
   price: number;
   image: IPicture;
   serviceId: number;
+  employees: IEmployee[];
   name: string;
   duration: number;
   category: ICategory;
@@ -36,23 +38,28 @@ export default function ServiceCard({
   description,
   price,
   image,
+  employees,
+  category,
   serviceId,
   duration,
 }: ServiceCardProps) {
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
-  const {
-    data: service,
-    isPending,
-    error,
-  } = useQuery({
-    queryKey: [`${currentUser.role}-${currentUser.id}-getOneService`],
-    queryFn: () => getServiceById(serviceId),
-  });
-
+  const service: IService = {
+    name,
+    description,
+    price,
+    picture: image,
+    id: serviceId,
+    duration,
+    categoryId: category.id,
+    employees,
+    category,
+  };
   const { convertMinutes } = useTimeConverter();
   const formatCurrency = useFormatCurrency(price);
+  const [currentService, setCurrentService] = useAtom(currentServiceAtom);
 
   const queryClient = useQueryClient();
   const { mutate: mutateCreateCart } = useMutation({
@@ -112,7 +119,7 @@ export default function ServiceCard({
     });
   };
 
-  const setModal = useSetAtom(modalAtom);
+  const setOpened = useSetAtom(modalAtom);
 
   const handleBookNow = async (item: IDataForCreateAppointment) => {
     // Implement direct booking logic
@@ -138,30 +145,13 @@ export default function ServiceCard({
       });
       return;
     }
-    setModal({
+    setOpened({
       type: "appointmentService",
       status: true,
     });
+
+    setCurrentService(service);
   }
-
-  if (isPending)
-    return (
-      <SkeletonComponent
-        isPending={isPending}
-        skeletons={[3]}
-        width={200}
-        height={300}
-      />
-    );
-
-  if (error)
-    return (
-      (
-        <p className="p-3 font-bold text-center">
-          Algo deu errado tente novamente:
-        </p>
-      ) + error.message
-    );
 
   return (
     <Card
@@ -169,14 +159,14 @@ export default function ServiceCard({
       radius="md"
       className={`${classes.card} flex-grow flex-shrink basis-80 mb-4`}
     >
-      <BookingModal
-        service={service}
-        appointmentIsPending={appointmentIsPending}
-        appointmentIsError={appointmentIsError}
-        onAddToCart={handleAddToCart}
-        onBookNow={handleBookNow}
-      />
-
+      {currentService && (
+        <BookingModal
+          appointmentIsPending={appointmentIsPending}
+          appointmentIsError={appointmentIsError}
+          onAddToCart={handleAddToCart}
+          onBookNow={handleBookNow}
+        />
+      )}
       <Card.Section className={classes.imageSection}>
         <Image
           src="/images/haircutMan.jpg"
@@ -188,12 +178,12 @@ export default function ServiceCard({
 
       <Group justify="space-between" mt="md">
         <div>
-          <Text fw={500}> {name}</Text>
+          <Text fw={500}>{name}</Text>
           <Text fz="xs" c="dimmed">
             {description}
           </Text>
         </div>
-        <Badge variant="outline">Categoria de cortes de cabelo</Badge>
+        <Badge variant="outline">{category.description}</Badge>
       </Group>
 
       <Card.Section className={classes.section} mt="md">

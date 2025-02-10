@@ -50,10 +50,11 @@ export default function DashboardChild() {
       {allServices.map((service) => (
         <ServiceCard
           key={service.id}
-          serviceId={service.id}
           name={service.name}
+          serviceId={service.id}
           description={service.description}
           price={service.price}
+          employees={service.employees}
           image={service.picture}
           duration={service.duration}
           category={service.category}

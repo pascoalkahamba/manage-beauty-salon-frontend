@@ -7,27 +7,29 @@ import {
   ICreateCart,
   ICurrentUser,
   IDataForCreateAppointment,
+  IEmployee,
   IPicture,
+  IService,
 } from "@/interfaces";
 import useTimeConverter from "@/hooks/useTimeConverter";
-import { modalAtom } from "@/storage/atom";
-import { useSetAtom } from "jotai";
+import { currentServiceAtom, modalAtom } from "@/storage/atom";
+import { useAtom, useSetAtom } from "jotai";
 import { BookingModal } from "@/components/BookingServiceModal";
-import SkeletonComponent from "@/components/Skeleton";
 import { notifications } from "@mantine/notifications";
-import { creatAppointment, createCart, getServiceById } from "@/servers";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { creatAppointment, createCart } from "@/servers";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 
 interface ServiceCardProps {
-  height: string;
   description: string;
   price: number;
   image: IPicture;
   serviceId: number;
+  employees: IEmployee[];
   name: string;
   duration: number;
   category: ICategory;
+  height: string;
 }
 
 export default function ServiceCardCarouusel({
@@ -37,6 +39,7 @@ export default function ServiceCardCarouusel({
   duration,
   price,
   serviceId,
+  employees,
   image,
   height,
 }: ServiceCardProps) {
@@ -46,14 +49,17 @@ export default function ServiceCardCarouusel({
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
-  const {
-    data: service,
-    isPending,
-    error,
-  } = useQuery({
-    queryKey: [`${currentUser.role}-${currentUser.id}-getOneService`],
-    queryFn: () => getServiceById(serviceId),
-  });
+  const service: IService = {
+    name,
+    description,
+    price,
+    picture: image,
+    duration,
+    category,
+    categoryId: category.id,
+    id: serviceId,
+    employees,
+  };
 
   const { mutate: mutateCreateCart } = useMutation({
     mutationFn: (cart: ICreateCart) => createCart(cart),
@@ -113,6 +119,7 @@ export default function ServiceCardCarouusel({
   };
 
   const setModal = useSetAtom(modalAtom);
+  const [currentService, setCurrentService] = useAtom(currentServiceAtom);
 
   const handleBookNow = async (item: IDataForCreateAppointment) => {
     // Implement direct booking logic
@@ -143,26 +150,8 @@ export default function ServiceCardCarouusel({
       type: "appointmentService",
       status: true,
     });
+    setCurrentService(service);
   }
-
-  if (isPending)
-    return (
-      <SkeletonComponent
-        isPending={isPending}
-        skeletons={[3]}
-        width={200}
-        height={300}
-      />
-    );
-
-  if (error)
-    return (
-      (
-        <p className="p-3 font-bold text-center">
-          Algo deu errado tente novamente:
-        </p>
-      ) + error.message
-    );
 
   return (
     <Paper
@@ -175,13 +164,14 @@ export default function ServiceCardCarouusel({
       }}
       className={`${classes.card} flex-grow flex-shrink w-full basis-80 mb-4`}
     >
-      <BookingModal
-        service={service}
-        appointmentIsPending={appointmentIsPending}
-        appointmentIsError={appointmentIsError}
-        onAddToCart={handleAddToCart}
-        onBookNow={handleBookNow}
-      />
+      {currentService && (
+        <BookingModal
+          appointmentIsPending={appointmentIsPending}
+          appointmentIsError={appointmentIsError}
+          onAddToCart={handleAddToCart}
+          onBookNow={handleBookNow}
+        />
+      )}
 
       <div className="flex items-center justify-between w-full">
         <Title order={3} className={classes.title}>

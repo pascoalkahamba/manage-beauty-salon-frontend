@@ -1,5 +1,5 @@
 // schema.ts
-
+"use client";
 // BookingModal.tsx
 import { useForm, zodResolver } from "@mantine/form";
 import {
@@ -14,43 +14,32 @@ import {
   Select,
   Paper,
   Divider,
-  NumberFormatter,
 } from "@mantine/core";
 import { DatePickerInput, TimeInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { IconClock, IconCurrency, IconCategory } from "@tabler/icons-react";
 import { BookingFormValues } from "@/@types";
 import { bookingSchema } from "@/schemas";
-import { useAtom } from "jotai";
-import { modalAtom } from "@/storage/atom";
+import { useAtom, useAtomValue } from "jotai";
+import { currentServiceAtom, modalAtom } from "@/storage/atom";
 import { IDataForCreateAppointment, IService } from "@/interfaces";
-
-export interface Employee {
-  id: string;
-  name: string;
-  avatar: string;
-  specialties: string[];
-  availability: string[];
-}
-
-export interface ICart {
-  serviceId: string;
-  employeeId: string;
-  date: Date;
-  hour: string;
-}
+import { Dispatch, SetStateAction } from "react";
+import { useFormatCurrency } from "@/hooks/useFormatCurrency";
+import useTimeConverter from "@/hooks/useTimeConverter";
 
 interface BookingModalProps {
-  service: IService;
   appointmentIsPending: boolean;
   appointmentIsError: boolean;
+  setCanEdit?: Dispatch<SetStateAction<boolean>>;
+  canEdit?: boolean;
   onAddToCart: (item: IDataForCreateAppointment) => void;
   onBookNow: (item: IDataForCreateAppointment) => void;
 }
 
 export function BookingModal({
-  service,
   onAddToCart,
+  canEdit,
+  setCanEdit,
   onBookNow,
 }: BookingModalProps) {
   const form = useForm<BookingFormValues>({
@@ -62,13 +51,20 @@ export function BookingModal({
     validate: zodResolver(bookingSchema),
   });
 
-  const [modal, setModal] = useAtom(modalAtom);
+  const [modalOpened, setModalOpened] = useAtom(modalAtom);
+  const service = useAtomValue(currentServiceAtom) as IService;
 
+  console.log("service", service);
+  const formatCurrency = useFormatCurrency(service.price);
+  const { convertMinutes } = useTimeConverter();
   function onClose() {
-    setModal({
-      type: "appointmentServie",
+    setModalOpened({
+      type: "appointmentService",
       status: false,
     });
+    if (setCanEdit) {
+      setCanEdit(false);
+    }
   }
 
   // Helper function to check if hour slot is available
@@ -144,13 +140,16 @@ export function BookingModal({
 
   return (
     <Modal
-      opened={modal.status}
+      opened={
+        (modalOpened.status && modalOpened.type === "appointmentService") ||
+        canEdit!
+      }
       onClose={onClose}
       size="xl"
       title={<Title order={2}>{service.name}</Title>}
       overlayProps={{
         color: "#1a1a1e4f",
-        opacity: 0.3,
+        opacity: 0.7,
         blur: 2,
       }}
     >
@@ -176,19 +175,12 @@ export function BookingModal({
 
             <Group>
               <IconClock size={20} />
-              <Text>{service.duration} minutos</Text>
+              <Text>{convertMinutes(service.duration)}</Text>
             </Group>
 
             <Group>
               <IconCurrency size={20} />
-              <Text fw={500}>
-                <NumberFormatter
-                  value={service.price}
-                  prefix="R$ "
-                  decimalScale={2}
-                  fixedDecimalScale
-                />
-              </Text>
+              <Text fw={500}>{formatCurrency}</Text>
             </Group>
           </Stack>
 

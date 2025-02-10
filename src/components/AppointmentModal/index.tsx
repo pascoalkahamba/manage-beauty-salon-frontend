@@ -19,7 +19,6 @@ import { AppointmentSchema } from "@/schemas";
 import {
   IAppointment,
   ICurrentUser,
-  IModalAtom,
   IUpdateAppointmentStatus,
 } from "@/interfaces";
 import { showStatusInPortuguese } from "@/utils";
@@ -27,15 +26,15 @@ import useTimeConverter from "@/hooks/useTimeConverter";
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateStatusAppointment } from "@/servers";
+import { useAtomValue } from "jotai";
+import { modalAtom } from "@/storage/atom";
 
 interface AppointmentModalProps {
-  opened: IModalAtom;
   onClose: () => void;
   appointment: IAppointment;
 }
 
 export default function AppointmentModal({
-  opened,
   onClose,
   appointment,
 }: AppointmentModalProps) {
@@ -72,6 +71,8 @@ export default function AppointmentModal({
       });
     },
   });
+
+  const opened = useAtomValue(modalAtom);
 
   const formatCurrency = useFormatCurrency(appointment.service.price);
   const form = useForm({

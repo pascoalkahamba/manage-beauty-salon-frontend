@@ -1,20 +1,21 @@
 import { IconShoppingCart } from "@tabler/icons-react";
 import { Group, Box, Text } from "@mantine/core";
-import { Dispatch, SetStateAction } from "react";
+import { useSetAtom } from "jotai";
+import { modalAtom } from "@/storage/atom";
 
 interface CartHeaderIconProps {
-  setModalOpened: Dispatch<SetStateAction<boolean>>;
   itemCount: number | undefined;
 }
 
-const CartHeaderIcon = ({
-  itemCount = 0,
-  setModalOpened,
-}: CartHeaderIconProps) => {
+const CartHeaderIcon = ({ itemCount = 0 }: CartHeaderIconProps) => {
+  const setModal = useSetAtom(modalAtom);
   return (
-    <Group gap={2} style={{ position: "relative", cursor: "pointer" }}>
+    <Group
+      gap={2}
+      style={{ position: "relative", cursor: "pointer" }}
+      onClick={() => setModal({ type: "openCart", status: true })}
+    >
       <Box
-        onClick={() => setModalOpened(true)}
         style={{
           position: "absolute",
           top: -5,

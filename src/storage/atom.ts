@@ -1,4 +1,4 @@
-import { IModalAtom } from "@/interfaces";
+import { IModalAtom, IService } from "@/interfaces";
 import { atom } from "jotai";
 
 const modalAtom = atom<IModalAtom>({
@@ -6,4 +6,6 @@ const modalAtom = atom<IModalAtom>({
   status: false,
 });
 
-export { modalAtom };
+const currentServiceAtom = atom<IService | null>(null);
+
+export { modalAtom, currentServiceAtom };

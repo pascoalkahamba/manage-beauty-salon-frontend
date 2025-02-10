@@ -1,6 +1,6 @@
 // types.ts
 export interface CartAppointment {
-  id: string;
+  id: number;
   serviceName: string;
   employeeName: string;
   date: Date;
@@ -26,21 +26,22 @@ import {
 import { DatePickerInput, TimeInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { IconTrash, IconEdit, IconCalendarCheck } from "@tabler/icons-react";
+import { useAtom } from "jotai";
+import { modalAtom } from "@/storage/atom";
+import { IAppointment } from "@/interfaces";
+import useTimeConverter from "@/hooks/useTimeConverter";
+import { formatCurrency } from "@/utils/formatters";
 
 interface CartModalProps {
-  opened: boolean;
-  onClose: () => void;
-  appointments: CartAppointment[];
-  onDeleteAppointment: (id: string) => Promise<void>;
-  onUpdateAppointment: (id: string, date: Date, time: string) => Promise<void>;
-  onScheduleAppointment: (id: string) => Promise<void>;
+  appointments: IAppointment[];
+  onDeleteAppointment: (id: number) => Promise<void>;
+  onUpdateAppointment: (id: number, date: Date, time: string) => Promise<void>;
+  onScheduleAppointment: (id: number) => Promise<void>;
   onScheduleAll: () => Promise<void>;
   onClearCart: () => Promise<void>;
 }
 
 export default function CartModal({
-  opened,
-  onClose,
   appointments,
   onDeleteAppointment,
   onUpdateAppointment,
@@ -49,17 +50,24 @@ export default function CartModal({
   onClearCart,
 }: CartModalProps) {
   const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editDate, setEditDate] = useState<Date | null>(null);
   const [editTime, setEditTime] = useState("");
 
-  const totalPrice = appointments.reduce((sum, app) => sum + app.price, 0);
+  const [opened, setOpened] = useAtom(modalAtom);
+
+  const { convertMinutes } = useTimeConverter();
+
+  const totalPrice = appointments.reduce(
+    (sum, app) => sum + app.service.price,
+    0
+  );
   const totalDuration = appointments.reduce(
-    (sum, app) => sum + app.duration,
+    (sum, app) => sum + app.service.duration,
     0
   );
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     try {
       setLoading(true);
       await onDeleteAppointment(id);
@@ -79,7 +87,7 @@ export default function CartModal({
     }
   };
 
-  const handleUpdate = async (id: string) => {
+  const handleUpdate = async (id: number) => {
     if (!editDate || !editTime) {
       notifications.show({
         title: "Error",
@@ -111,7 +119,7 @@ export default function CartModal({
     }
   };
 
-  const handleSchedule = async (id: string) => {
+  const handleSchedule = async (id: number) => {
     try {
       setLoading(true);
       await onScheduleAppointment(id);
@@ -130,6 +138,8 @@ export default function CartModal({
       setLoading(false);
     }
   };
+
+  const onClose = () => setOpened({ type: "openCart", status: false });
 
   const handleScheduleAll = async () => {
     try {
@@ -175,9 +185,9 @@ export default function CartModal({
 
   return (
     <Modal
-      opened={opened}
+      opened={opened.type === "openCart" && opened.status}
       onClose={onClose}
-      title="Your Appointment Cart"
+      title="Seus agendamentos no carrinho"
       size="lg"
     >
       <LoadingOverlay visible={loading} />
@@ -185,22 +195,30 @@ export default function CartModal({
       <Stack spacing="md">
         {appointments.length === 0 ? (
           <Text color="dimmed" align="center" py="xl">
-            Your cart is empty
+            Seu carrinho esta vazio.
           </Text>
         ) : (
           <>
             {appointments.map((appointment) => (
               <Card key={appointment.id} withBorder padding="sm">
-                <Group position="apart">
+                <Group position="apart" justify="space-between">
                   <div>
-                    <Text weight={500}>{appointment.serviceName}</Text>
+                    <Text weight={500}>{appointment.service.name}</Text>
                     <Text size="sm" color="dimmed">
-                      with {appointment.employeeName}
+                      Com {appointment.employee.username}
                     </Text>
                     <Group spacing="xs" mt={4}>
-                      <Badge size="sm">{appointment.duration} min</Badge>
+                      <Badge size="sm">
+                        {convertMinutes(appointment.service.duration)}
+                      </Badge>
                       <Badge size="sm" color="green">
-                        ${appointment.price}
+                        {formatCurrency(appointment.service.price)}
+                      </Badge>
+                      <Badge size="sm" color="yellow">
+                        {new Date(appointment.date).toDateString()}
+                      </Badge>
+                      <Badge size="sm" color="blue">
+                        {appointment.hour}
                       </Badge>
                     </Group>
                   </div>
@@ -220,10 +238,10 @@ export default function CartModal({
                     </ActionIcon>
                     <Button
                       size="xs"
-                      leftIcon={<IconCalendarCheck size={16} />}
+                      leftSection={<IconCalendarCheck size={16} />}
                       onClick={() => handleSchedule(appointment.id)}
                     >
-                      Schedule
+                      Agendar
                     </Button>
                   </Group>
                 </Group>
@@ -232,13 +250,13 @@ export default function CartModal({
                   <Stack spacing="xs" mt="md">
                     <Group grow>
                       <DatePickerInput
-                        label="New Date"
+                        label="Nova Data"
                         value={editDate}
                         onChange={setEditDate}
                         minDate={new Date()}
                       />
                       <TimeInput
-                        label="New Time"
+                        label="Nova Hora"
                         value={editTime}
                         onChange={(e) => setEditTime(e.currentTarget.value)}
                       />
@@ -249,13 +267,13 @@ export default function CartModal({
                         size="xs"
                         onClick={() => setEditingId(null)}
                       >
-                        Cancel
+                        Cancelar
                       </Button>
                       <Button
                         size="xs"
                         onClick={() => handleUpdate(appointment.id)}
                       >
-                        Update
+                        Atualizar
                       </Button>
                     </Group>
                   </Stack>
@@ -265,16 +283,20 @@ export default function CartModal({
 
             <Divider my="md" />
 
-            <Group position="apart">
+            <Group position="apart" className="w-full">
               <div>
-                <Text size="sm">Total Duration: {totalDuration} minutes</Text>
-                <Text weight={500}>Total Price: ${totalPrice}</Text>
+                <Text size="sm">
+                  Total da duração: {convertMinutes(totalDuration)}
+                </Text>
+                <Text weight={500}>
+                  Total do preço: {formatCurrency(totalPrice)}
+                </Text>
               </div>
-              <Group>
+              <Group className="flex items-center justify-end w-full">
                 <Button variant="subtle" color="red" onClick={handleClearCart}>
-                  Clear Cart
+                  Limpar o Carrinho
                 </Button>
-                <Button onClick={handleScheduleAll}>Schedule All</Button>
+                <Button onClick={handleScheduleAll}>Agendar Todos</Button>
               </Group>
             </Group>
           </>
@@ -283,80 +305,3 @@ export default function CartModal({
     </Modal>
   );
 }
-
-// Usage Example
-const ExampleUsage = () => {
-  const [modalOpened, setModalOpened] = useState(false);
-
-  const sampleAppointments: CartAppointment[] = [
-    {
-      id: "1",
-      serviceName: "Hair Coloring",
-      employeeName: "John Smith",
-      date: new Date(),
-      time: "14:30",
-      price: 150,
-      duration: 120,
-    },
-    {
-      id: "2",
-      serviceName: "Haircut",
-      employeeName: "Jane Doe",
-      date: new Date(),
-      time: "16:30",
-      price: 80,
-      duration: 60,
-    },
-  ];
-
-  const handleDeleteAppointment = async (id: string) => {
-    // Implement API call
-    console.log(`Deleting appointment ${id}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const handleUpdateAppointment = async (
-    id: string,
-    date: Date,
-    time: string
-  ) => {
-    // Implement API call
-    console.log(`Updating appointment ${id} to ${date} ${time}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const handleScheduleAppointment = async (id: string) => {
-    // Implement API call
-    console.log(`Scheduling appointment ${id}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const handleScheduleAll = async () => {
-    // Implement API call
-    console.log("Scheduling all appointments");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const handleClearCart = async () => {
-    // Implement API call
-    console.log("Clearing cart");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  return (
-    <>
-      <Button onClick={() => setModalOpened(true)}>Open Cart</Button>
-
-      <CartModal
-        opened={modalOpened}
-        onClose={() => setModalOpened(false)}
-        appointments={sampleAppointments}
-        onDeleteAppointment={handleDeleteAppointment}
-        onUpdateAppointment={handleUpdateAppointment}
-        onScheduleAppointment={handleScheduleAppointment}
-        onScheduleAll={handleScheduleAll}
-        onClearCart={handleClearCart}
-      />
-    </>
-  );
-};

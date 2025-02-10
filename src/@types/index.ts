@@ -19,7 +19,10 @@ export type TStatus = "PENDING" | "CONFIRMED" | "CANCELED" | "COMPLETED";
 export type TOpenModal =
   | "listOfAppointments"
   | "updateAppointmentStatus"
+  | "updateAppointment"
   | "editProfileInfo"
-  | "none";
+  | "appointmentService"
+  | "none"
+  | "openCart";
 
 export type TTypeButton = "button" | "submit" | "reset" | undefined;

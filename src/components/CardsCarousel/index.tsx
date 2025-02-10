@@ -53,20 +53,32 @@ export default function CardsCarousel() {
 
   const slides = allServices
     .slice(0, 4)
-    .map(({ id, name, description, price, duration, picture, category }) => (
-      <Carousel.Slide key={id}>
-        <ServiceCardCarousel
-          height={`440px`}
-          name={name}
-          serviceId={id}
-          description={description}
-          price={price}
-          duration={duration}
-          image={picture}
-          category={category}
-        />
-      </Carousel.Slide>
-    ));
+    .map(
+      ({
+        id,
+        name,
+        description,
+        price,
+        duration,
+        picture,
+        category,
+        employees,
+      }) => (
+        <Carousel.Slide key={id}>
+          <ServiceCardCarousel
+            height={`440px`}
+            name={name}
+            category={category}
+            employees={employees}
+            serviceId={id}
+            description={description}
+            price={price}
+            duration={duration}
+            image={picture}
+          />
+        </Carousel.Slide>
+      )
+    );
 
   return (
     <Carousel
