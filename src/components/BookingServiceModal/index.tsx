@@ -54,7 +54,6 @@ export function BookingModal({
   const [modalOpened, setModalOpened] = useAtom(modalAtom);
   const service = useAtomValue(currentServiceAtom) as IService;
 
-  console.log("service", service);
   const formatCurrency = useFormatCurrency(service.price);
   const { convertMinutes } = useTimeConverter();
   function onClose() {
@@ -191,7 +190,9 @@ export function BookingModal({
           <Paper p="md" radius="md" withBorder>
             <form onSubmit={form.onSubmit(handleAddToCart)}>
               <Stack gap="md">
-                <Title order={3}>Agendar Serviço</Title>
+                <Title order={3}>
+                  {canEdit ? "Atualizar Agendamento" : "Agendar Serviço"}
+                </Title>
 
                 <Select
                   label="Profissional"
@@ -226,13 +227,14 @@ export function BookingModal({
                   <Button
                     variant="light"
                     className="p-1"
-                    onClick={() => form.onSubmit(handleAddToCart)()}
+                    color="red"
+                    onClick={onClose}
                   >
-                    Adicionar ao Carrinho
+                    Cancelar
                   </Button>
 
                   <Button onClick={() => form.onSubmit(handleBookNow)()}>
-                    Agendar Agora
+                    {canEdit ? "Atualizar" : "Agendar Agora"}
                   </Button>
                 </Group>
               </Stack>

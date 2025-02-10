@@ -121,17 +121,6 @@ export default function Header() {
   return (
     <div className={classes.header}>
       <Container className={classes.mainSection} size="md">
-        {user && (
-          <CartModal
-            // appointments={sampleAppointments}
-            appointments={user?.cart?.appointment as unknown as IAppointment[]}
-            onDeleteAppointment={handleDeleteAppointment}
-            onUpdateAppointment={handleUpdateAppointment}
-            onScheduleAppointment={handleScheduleAppointment}
-            onScheduleAll={handleScheduleAll}
-            onClearCart={handleClearCart}
-          />
-        )}
         <Group justify="space-between">
           <h1>
             <Link href="/dashboard">Salao de Beleza</Link>

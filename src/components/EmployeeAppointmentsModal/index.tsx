@@ -20,6 +20,7 @@ import {
   IAppointment,
   ICurrentUser,
   IDataForCreateAppointment,
+  IUpdateAppointment,
 } from "@/interfaces";
 import useTimeConverter from "@/hooks/useTimeConverter";
 import { formatCurrency } from "@/utils/formatters";
@@ -30,6 +31,9 @@ import Link from "next/link";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { BookingModal } from "../BookingServiceModal";
 import { notifications } from "@mantine/notifications";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteAppointment, updateAppointment } from "@/servers";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
 interface EmployeeAppointmentsModalProps {
   onClose: () => void;
@@ -40,17 +44,66 @@ export default function EmployeeAppointmentsModal({
   onClose,
   appointments,
 }: EmployeeAppointmentsModalProps) {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [canEdit, setCanEdit] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<IAppointment | null>(null);
-  const [opened, setOpened] = useAtom(modalAtom);
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
 
+  const { mutate: mutateDeleteAppointment, isPending: isPendingAppointment } =
+    useMutation({
+      mutationFn: (appointmentId: number) => deleteAppointment(appointmentId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
+        });
+        notifications.show({
+          title: "Agendamento deletado",
+          message: "Agendamento deletado com sucesso!",
+          color: "green",
+          position: "top-right",
+        });
+      },
+      onError: () => {
+        notifications.show({
+          title: "Erro ao deletar agendamento",
+          message: "Erro ao deletar agendamento",
+          color: "red",
+          position: "top-right",
+        });
+      },
+    });
+
+  const { mutate, isPending, isError } = useMutation({
+    mutationFn: (appointment: IUpdateAppointment) =>
+      updateAppointment(appointment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
+      });
+      notifications.show({
+        title: "Atualização de agendamento",
+        message: "Agendamento atualizado com sucesso!",
+        color: "green",
+        position: "top-right",
+      });
+    },
+    onError: () => {
+      notifications.show({
+        title: "Atualização de agendamento",
+        message: "Ocorreu um erro ao atualizar o agendamento.",
+        color: "red",
+        position: "top-right",
+      });
+    },
+  });
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<IAppointment | null>(null);
+  const [opened, setOpened] = useAtom(modalAtom);
   const { convertMinutes } = useTimeConverter();
+  const [openDeleteAppointment, setOpenDeleteAppointment] = useState(false);
   const [currentService, setCurrentService] = useAtom(currentServiceAtom);
 
   const getStatusColor = (status: TStatus) => {
@@ -64,47 +117,48 @@ export default function EmployeeAppointmentsModal({
   };
 
   const handleAddToCart = async (item: IDataForCreateAppointment) => {
-    await handleBookNow(item);
-
-    // mutateCreateCart({
-    //   clientId: currentUser.id,
-    //   appointmentId: appointmentData?.id as number,
-    // });
+    editAppointment(item);
   };
 
-  const handleBookNow = async (item: IDataForCreateAppointment) => {
-    // Implement direct booking logic
-    // mutate({
-    //   clientId: currentUser.id,
-    //   serviceId: serviceId,
-    //   date: item.date,
-    //   hour: item.hour,
-    //   employeeId: +item.employeeId,
-    //   status: "PENDING",
-    // });
-    console.log("Booking now:", item);
+  const onConfirmDelete = async () => {
+    mutateDeleteAppointment(selectedAppointment?.id as number);
+    setOpenDeleteAppointment(false);
   };
 
-  function appointmentService() {
+  function editAppointment(item: IDataForCreateAppointment) {
     if (currentUser.role !== "CLIENT") {
       notifications.show({
         title: "Acesso negado",
         message:
-          "Você não tem permissão para agendar serviços. Por enquanto apenas clientes podem agendar serviços.",
+          "Você não tem permissão para editar este agendamento. Por enquanto apenas clientes podem agendar serviços.",
         color: "yellow",
         position: "top-right",
       });
       return;
     }
-    setOpened({
-      type: "appointmentService",
-      status: true,
+
+    mutate({
+      id: selectedAppointment?.id as number,
+      employeeId: +item.employeeId,
+      date: item.date,
+      hour: item.hour,
     });
   }
 
   const searchName = currentUser.role === "EMPLOYEE" ? "client" : "employee";
 
   function handleEdit(appointment: IAppointment) {
+    if (appointment?.status !== "PENDING") {
+      notifications.show({
+        title: "Acesso negado",
+        message:
+          "Você não pode editar este agendamento. Apenas agendamentos pendentes podem ser editados.",
+        color: "yellow",
+        position: "top-right",
+      });
+      return;
+    }
+
     setCurrentService(appointment.service);
     setSelectedAppointment(appointment);
     setCanEdit(true);
@@ -113,9 +167,12 @@ export default function EmployeeAppointmentsModal({
     console.log("opened:", opened);
   }
 
-  const handleDelete = (appointmentId: number) => {
+  const handleDelete = async (appointment: IAppointment) => {
     // Implemente a lógica para excluir o agendamento aqui
-    console.log("Excluindo agendamento:", appointmentId);
+    setOpenDeleteAppointment(true);
+    setSelectedAppointment(appointment);
+    setCurrentService(appointment.service);
+    console.log("Excluindo agendamento:", appointment.id);
   };
 
   const filteredAppointments = appointments.filter((appointment) => {
@@ -227,19 +284,29 @@ export default function EmployeeAppointmentsModal({
                         </ActionIcon>
                         <ActionIcon
                           color="red"
-                          onClick={() => handleDelete(appointment.id)}
+                          onClick={() => handleDelete(appointment)}
                         >
                           <IconTrash size={16} />
                         </ActionIcon>
 
                         {currentService && (
                           <BookingModal
-                            appointmentIsPending={false}
+                            appointmentIsPending={isPending}
                             setCanEdit={setCanEdit}
-                            appointmentIsError={false}
+                            appointmentIsError={isError}
                             canEdit={canEdit}
                             onAddToCart={handleAddToCart}
-                            onBookNow={handleBookNow}
+                            onBookNow={editAppointment}
+                          />
+                        )}
+                        {currentService && (
+                          <DeleteConfirmationModal
+                            type="deleteAppointment"
+                            isPending={isPendingAppointment}
+                            opened={openDeleteAppointment}
+                            setOpened={setOpenDeleteAppointment}
+                            appointment={appointment}
+                            onConfirmDelete={onConfirmDelete}
                           />
                         )}
                       </td>

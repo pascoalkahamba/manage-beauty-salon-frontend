@@ -180,8 +180,11 @@ export interface IUpdateAppointmentStatus {
   reason: string;
 }
 
-export interface IUpdateAppointment extends ICreateAppointment {
+export interface IUpdateAppointment {
   id: number;
+  date: Date;
+  hour: string;
+  employeeId: number;
 }
 
 export interface ICurrentUser {

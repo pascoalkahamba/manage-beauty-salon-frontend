@@ -209,7 +209,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
                   Editar
                 </Button>
               )}
-              {availability ? (
+              {currentUser.role === "EMPLOYEE" && availability ? (
                 <Button variant="light" color="red" fullWidth={!heCan}>
                   Ocupado
                 </Button>

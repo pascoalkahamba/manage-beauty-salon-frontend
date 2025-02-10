@@ -15,6 +15,11 @@ export type AppointmentType = zod.infer<typeof AppointmentSchema>;
 export type IUpdateUserProfile = zod.infer<typeof profileSchema>;
 
 export type TRole = "EMPLOYEE" | "CLIENT" | "MANAGER";
+export type TDeleteModal =
+  | "deleteAppointment"
+  | "deleteService"
+  | "deleteUser"
+  | "deleteCategory";
 export type TStatus = "PENDING" | "CONFIRMED" | "CANCELED" | "COMPLETED";
 export type TOpenModal =
   | "listOfAppointments"
@@ -23,6 +28,8 @@ export type TOpenModal =
   | "editProfileInfo"
   | "appointmentService"
   | "none"
+  | "deleteAppointment"
+  | "deleteAccount"
   | "openCart";
 
 export type TTypeButton = "button" | "submit" | "reset" | undefined;
