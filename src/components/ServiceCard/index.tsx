@@ -169,8 +169,12 @@ export default function ServiceCard({
       )}
       <Card.Section className={classes.imageSection}>
         <Image
-          src="/images/haircutMan.jpg"
-          alt=" {name}"
+          src={
+            !service.picture.url
+              ? "/images/haircutMan.jpg"
+              : service.picture.url
+          }
+          alt={!service.picture.name ? "Haircut Man" : service.picture.name}
           width={770}
           height={100}
         />

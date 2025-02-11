@@ -159,7 +159,11 @@ export default function ServiceCardCarouusel({
       p="xl"
       radius="md"
       style={{
-        backgroundImage: `url(/images/haircutMan.jpg)`,
+        backgroundImage: `${
+          !service.picture.url
+            ? "url(/images/haircutMan.jpg)"
+            : `url(${service.picture.url})`
+        }`,
         height: rem(height),
       }}
       className={`${classes.card} flex-grow flex-shrink w-full basis-80 mb-4`}

@@ -2,6 +2,7 @@ import {
   AppointmentSchema,
   bookingSchema,
   createAccountSchema,
+  serviceSchema,
   loginSchema,
   profileSchema,
 } from "@/schemas";
@@ -13,6 +14,7 @@ export type TDataLoginProps = zod.infer<typeof loginSchema>;
 export type BookingFormValues = zod.infer<typeof bookingSchema>;
 export type AppointmentType = zod.infer<typeof AppointmentSchema>;
 export type IUpdateUserProfile = zod.infer<typeof profileSchema>;
+export type ICreateService = zod.infer<typeof serviceSchema>;
 
 export type TRole = "EMPLOYEE" | "CLIENT" | "MANAGER";
 export type TDeleteModal =

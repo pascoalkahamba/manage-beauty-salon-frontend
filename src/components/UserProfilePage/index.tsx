@@ -11,19 +11,28 @@ import {
   Divider,
 } from "@mantine/core";
 import { IconClock, IconCalendarEvent } from "@tabler/icons-react";
-import { TRole } from "@/@types";
+import { ICreateService, TRole } from "@/@types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getUserById, updateUserProfile } from "@/servers";
+import {
+  createService,
+  getAllServices,
+  getUserById,
+  updateUserProfile,
+} from "@/servers";
 import SkeletonComponent from "@/components/Skeleton";
 import { currentUserCanManagerProfile, showNameOfCurrentUser } from "@/utils";
 import EmployeeAppointmentsModal from "@/components/EmployeeAppointmentsModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
-import { ICurrentUser, IUpdateUserProfile } from "@/interfaces";
+import {
+  ICurrentUser,
+  IServiceToCreate,
+  IUpdateUserProfile,
+} from "@/interfaces";
 import { notifications } from "@mantine/notifications";
 import ServicesManagementModal, {
-  ServiceType,
+  ICreateService,
 } from "@/components/ServicesManagementModal";
 
 interface UserProfilePageProps {
@@ -34,7 +43,34 @@ interface UserProfilePageProps {
 export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   const [modalOpened, setModalOpened] = useAtom(modalAtom);
   const queryClient = useQueryClient();
+  const { data: serviceData } = useQuery({
+    queryKey: ["getAllServices"],
+    queryFn: getAllServices,
+  });
 
+  const { mutate: mutateCreateService, isPending: isPendingCreateService } =
+    useMutation({
+      mutationFn: (values: IServiceToCreate) => createService(values),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["getAllServices"],
+        });
+        notifications.show({
+          title: "Criação de serviço",
+          message: "Serviço criado com sucesso!",
+          color: "green",
+          position: "top-right",
+        });
+      },
+      onError: (error) => {
+        notifications.show({
+          title: "Criação de serviço",
+          message: "Erro ao criar serviço!",
+          color: "red",
+          position: "top-right",
+        });
+      },
+    });
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
@@ -69,52 +105,28 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     },
   });
 
-  const sampleServices: ServiceType[] = [
-    {
-      id: "1",
-      name: "Haircut",
-      category: "Hair Care",
-      price: 50,
-      duration: 45,
-    },
-    {
-      id: "2",
-      name: "Manicure",
-      category: "Nail Care",
-      price: 35,
-      duration: 60,
-    },
-    {
-      id: "2",
-      name: "Manicure",
-      category: "Nail Care",
-      price: 35,
-      duration: 60,
-    },
-    {
-      id: "3",
-      name: "Manicure",
-      category: "Nail Care",
-      price: 35,
-      duration: 60,
-    },
-    {
-      id: "4",
-      name: "Manicure",
-      category: "Nail Care",
-      price: 35,
-      duration: 60,
-    },
-  ];
+  const handleAddService = async (service: IServiceToCreate) => {
+    let photoData: Blob = service.photo;
 
-  const handleAddService = async (service: Omit<ServiceType, "id">) => {
-    console.log("Adding service:", service);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (service.photo instanceof File) {
+      // Convert file to base64
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(service.photo);
+      });
+      photoData = base64 as Blob;
+    }
+
+    mutateCreateService({
+      ...service,
+      photo: photoData,
+    });
   };
 
   const handleUpdateService = async (
     id: string,
-    service: Omit<ServiceType, "id">
+    service: Omit<ICreateService, "id">
   ) => {
     console.log(`Updating service ${id}:`, service);
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -304,17 +316,19 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
             appointments={user.appointments}
           />
 
-          <ServicesManagementModal
-            opened={true}
-            onClose={() =>
-              setModalOpened({ type: "openModalServices", status: false })
-            }
-            services={sampleServices}
-            onAddService={handleAddService}
-            onUpdateService={handleUpdateService}
-            onDeleteService={handleDeleteService}
-          />
-
+          {serviceData && (
+            <ServicesManagementModal
+              onClose={() =>
+                setModalOpened({ type: "openModalServices", status: false })
+              }
+              services={serviceData}
+              onAddService={handleAddService}
+              isPendingEdit={false}
+              isPendingAdd={isPendingCreateService}
+              onUpdateService={handleUpdateService}
+              onDeleteService={handleDeleteService}
+            />
+          )}
           <EditProfileModal
             opened={modalOpened}
             onClose={() =>

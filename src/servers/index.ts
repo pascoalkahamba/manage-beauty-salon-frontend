@@ -11,9 +11,11 @@ import {
   ILogin,
   ILoginResponse,
   IService,
+  IServiceToCreate,
   IUpdateAppointment,
   IUpdateAppointmentStatus,
   IUpdateCart,
+  IUpdateService,
   IUpdateUserProfile,
   IUser,
   IUserResponse,
@@ -24,10 +26,12 @@ import {
   CREATEACCOUNTEMPLOYEEROUTE,
   CREATEAPPOINTMENTROUTE,
   CREATECARTROUTE,
+  CREATESERVICEROUTE,
   DELETEAPPOINTMENTROUTE,
   DELETECARTROUTE,
   DELETECLIENTROUTE,
   DELETEEMPLOYEEROUTE,
+  DELETESERVICEROUTE,
   GETALLACADEMICLEVELSROUTE,
   GETALLAPPOINTMENTSROUTE,
   GETALLCARTSROUTE,
@@ -45,6 +49,7 @@ import {
   UPDATECARTROUTE,
   UPDATECLIENTROUTE,
   UPDATEEMPLOYEEROUTE,
+  UPDATESERVICEROUTE,
   UPDATESTATUSAPPOINTMENTROUTE,
 } from "@/routes";
 import { TRole } from "@/@types";
@@ -122,6 +127,26 @@ export async function getAllServices() {
   const response = await axiosApp.get(GETALLSERVICESROUTE);
   const services = response.data;
   return services as unknown as IService[];
+}
+
+export async function createService(service: IServiceToCreate) {
+  const response = await axiosApp.post(CREATESERVICEROUTE, service);
+  const serviceCreated = response.data;
+  return serviceCreated as unknown as IService;
+}
+
+export async function updaateService(service: IUpdateService) {
+  const response = await axiosApp.post(
+    `${UPDATESERVICEROUTE}/${service.id}`,
+    service
+  );
+  const serviceUpdated = response.data;
+  return serviceUpdated as unknown as IService;
+}
+export async function deleteService(serviceId: number) {
+  const response = await axiosApp.delete(`${DELETESERVICEROUTE}/${serviceId}`);
+  const serviceDeleted = response.data;
+  return serviceDeleted as unknown as IService;
 }
 
 export async function getServiceById(serviceId: number) {

@@ -1,16 +1,35 @@
 // types.ts
 "use client";
-export interface ServiceType {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  photoUrl: string;
-  duration: number;
-}
+
+import { useMemo, useState } from "react";
+import {
+  Modal,
+  Button,
+  Group,
+  Stack,
+  Table,
+  Text,
+  ActionIcon,
+  TextInput,
+  Drawer,
+  Badge,
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import {
+  IconSearch,
+  IconEdit,
+  IconTrash,
+  IconPlus,
+  IconUpload,
+} from "@tabler/icons-react";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import { useAtomValue } from "jotai";
+import { modalAtom } from "@/storage/atom";
+import { useQuery } from "@tanstack/react-query";
+import { getAllCategories } from "@/servers";
 
 // ServiceForm.tsx
-import { useForm } from "@mantine/form";
+import { useForm, zodResolver } from "@mantine/form";
 import {
   Avatar,
   Center,
@@ -19,10 +38,15 @@ import {
   Select,
   Textarea,
 } from "@mantine/core";
+import { IService } from "@/interfaces";
+import useTimeConverter from "@/hooks/useTimeConverter";
+import { formatCurrency } from "@/utils/formatters";
+import { serviceSchema } from "@/schemas";
+import { ICreateService } from "@/@types";
 
 interface ServiceFormProps {
-  initialValues?: ServiceType;
-  onSubmit: (values: Omit<ServiceType, "id">) => Promise<void>;
+  initialValues?: ICreateService;
+  onSubmit: (values: ICreateService) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
 }
@@ -37,22 +61,21 @@ function ServiceForm({
     initialValues?.photoUrl || null
   );
 
+  const { data: categoryData, isError: categoryIsError } = useQuery({
+    queryKey: ["getAllCategories"],
+    queryFn: getAllCategories,
+  });
+
   const form = useForm({
     initialValues: initialValues || {
       name: "",
-      category: "",
+      categoryId: "0",
+      description: "",
       price: 0,
       duration: 30,
       photoUrl: "",
     },
-    validate: {
-      name: (value) =>
-        value.length < 2 ? "Name must be at least 2 characters" : null,
-      category: (value) => (!value ? "Category is required" : null),
-      price: (value) => (value < 0 ? "Price must be positive" : null),
-      duration: (value) =>
-        value < 15 ? "Duration must be at least 15 minutes" : null,
-    },
+    validate: zodResolver(serviceSchema),
   });
 
   const handleFileChange = (file: File | null) => {
@@ -68,18 +91,31 @@ function ServiceForm({
       setPreviewUrl(initialValues?.photoUrl || null);
     }
   };
+  function handleSubmit(values: ICreateService) {
+    console.log("values", values);
 
-  const categories = [
-    "Hair Care",
-    "Nail Care",
-    "Skin Care",
-    "Massage",
-    "Makeup",
-    "Other",
-  ];
+    onSubmit(values);
+  }
+
+  const allCategories = useMemo(() => {
+    return (
+      categoryData?.map((category) => ({
+        value: `${category.id}`,
+        label: category.name,
+      })) || []
+    );
+  }, [categoryData]);
+
+  if (categoryIsError) {
+    return (
+      <p className="p-3 font-bold text-center">
+        Algo deu errado tente novamente:
+      </p>
+    );
+  }
 
   return (
-    <form onSubmit={form.onSubmit((values) => onSubmit(values))}>
+    <form onSubmit={form.onSubmit(handleSubmit)}>
       <Stack spacing="md">
         <Center>
           <Avatar src={previewUrl} size={120} radius="md" className="mb-6" />
@@ -87,7 +123,7 @@ function ServiceForm({
 
         <FileInput
           label="Carregar nova foto"
-          placeholder="Upload new photo"
+          placeholder="Carregar foto"
           name="file"
           itemType="file"
           accept="image/png,image/jpeg,image/jpg"
@@ -98,7 +134,7 @@ function ServiceForm({
         <TextInput
           required
           label="Nome do serviço"
-          placeholder="e.g., Haircut"
+          placeholder="escreva o nome do serviço"
           {...form.getInputProps("name")}
           mb="md"
         />
@@ -106,15 +142,15 @@ function ServiceForm({
           required
           label="Descrição"
           placeholder="Digete uma descrição"
-          {...form.getInputProps("bio")}
+          {...form.getInputProps("description")}
         />
 
         <Select
           required
           label="Escolha a categoria"
           placeholder="Escolha uma categoria"
-          data={categories}
-          {...form.getInputProps("category")}
+          data={allCategories}
+          {...form.getInputProps("categoryId")}
           mb="md"
         />
 
@@ -124,7 +160,6 @@ function ServiceForm({
             label="Preço (AKZ)"
             placeholder="0.00"
             min={0}
-            precision={2}
             {...form.getInputProps("price")}
           />
 
@@ -152,47 +187,22 @@ function ServiceForm({
 }
 
 // ServicesManagementModal.tsx
-import { useState } from "react";
-import {
-  Modal,
-  Button,
-  Group,
-  Stack,
-  Table,
-  Text,
-  ActionIcon,
-  Card,
-  TextInput,
-  Drawer,
-  Badge,
-} from "@mantine/core";
-import { notifications } from "@mantine/notifications";
-import {
-  IconSearch,
-  IconEdit,
-  IconTrash,
-  IconPlus,
-  IconUpload,
-} from "@tabler/icons-react";
-import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
-import { useAtomValue } from "jotai";
-import { modalAtom } from "@/storage/atom";
 
 interface ServicesManagementModalProps {
-  opened: boolean;
   onClose: () => void;
-  services: ServiceType[];
-  onAddService: (service: Omit<ServiceType, "id">) => Promise<void>;
-  onUpdateService: (
-    id: string,
-    service: Omit<ServiceType, "id">
-  ) => Promise<void>;
+  services: IService[];
+  isPendingEdit: boolean;
+  isPendingAdd: boolean;
+  onAddService: (service: ICreateService) => Promise<void>;
+  onUpdateService: (id: string, service: ICreateService) => Promise<void>;
   onDeleteService: (id: string) => Promise<void>;
 }
 
 export default function ServicesManagementModal({
   onClose,
   services,
+  isPendingEdit,
+  isPendingAdd,
   onAddService,
   onUpdateService,
   onDeleteService,
@@ -200,89 +210,41 @@ export default function ServicesManagementModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [formDrawerOpened, setFormDrawerOpened] = useState(false);
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
-  const [editingService, setEditingService] = useState<ServiceType | null>(
+  const [editingService, setEditingService] = useState<ICreateService | null>(
     null
   );
-  const [selectedService, setSelectedService] = useState<ServiceType | null>(
+  const [selectedService, setSelectedService] = useState<ICreateService | null>(
     null
   );
   const [loading, setLoading] = useState(false);
+
+  const { convertMinutes } = useTimeConverter();
 
   const opened = useAtomValue(modalAtom);
 
   const filteredServices = services.filter(
     (service) =>
       service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.category.toLowerCase().includes(searchQuery.toLowerCase())
+      service.category.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAdd = async (values: Omit<ServiceType, "id">) => {
-    try {
-      setLoading(true);
-      await onAddService(values);
-      setFormDrawerOpened(false);
-      notifications.show({
-        title: "Success",
-        message: "Service added successfully",
-        color: "green",
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to add service",
-        color: "red",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleAdd = async (values: ICreateService) => {
+    await onAddService(values);
+    setFormDrawerOpened(false);
   };
 
-  const handleUpdate = async (values: Omit<ServiceType, "id">) => {
+  const handleUpdate = async (values: ICreateService) => {
     if (!editingService) return;
-
-    try {
-      setLoading(true);
-      await onUpdateService(editingService.id, values);
-      setFormDrawerOpened(false);
-      setEditingService(null);
-      notifications.show({
-        title: "Success",
-        message: "Service updated successfully",
-        color: "green",
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to update service",
-        color: "red",
-      });
-    } finally {
-      setLoading(false);
-    }
+    await onUpdateService(editingService.id, values);
+    setFormDrawerOpened(false);
+    setEditingService(null);
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      setLoading(true);
-      await onDeleteService(id);
-      setDeleteModalOpened(false);
-      setSelectedService(null);
-      notifications.show({
-        title: "Success",
-        message: "Service deleted successfully",
-        color: "green",
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to delete service",
-        color: "red",
-      });
-    } finally {
-      setLoading(false);
-    }
+    await onDeleteService(id);
+    setDeleteModalOpened(false);
+    setSelectedService(null);
   };
-
   return (
     <>
       <Modal
@@ -331,10 +293,10 @@ export default function ServicesManagementModal({
                   <tr key={service.id}>
                     <td>{service.name}</td>
                     <td>
-                      <Badge>{service.category}</Badge>
+                      <Badge>{service.category.name}</Badge>
                     </td>
-                    <td>{service.duration} min</td>
-                    <td>${service.price.toFixed(2)}</td>
+                    <td>{convertMinutes(service.duration)}</td>
+                    <td>{formatCurrency(service.price)}</td>
                     <td className="flex gap-3 items-center justify-center mt-2 w-full">
                       <ActionIcon
                         color="blue"
@@ -380,7 +342,7 @@ export default function ServicesManagementModal({
             setFormDrawerOpened(false);
             setEditingService(null);
           }}
-          loading={loading}
+          loading={editingService ? isPendingEdit : isPendingAdd}
         />
       </Drawer>
 

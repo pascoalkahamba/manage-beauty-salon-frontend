@@ -33,7 +33,7 @@ interface EditProfileModalProps {
   opened: IModalAtom;
   onClose: () => void;
   isPending: boolean;
-  initialData: IUpdateUserProfile & { photoUrl?: string }; // Add photoUrl to show current photo
+  initialData: IUpdateUserProfile;
   onSubmit: (values: IUpdateUserProfile) => void;
 }
 

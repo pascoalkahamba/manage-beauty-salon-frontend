@@ -48,6 +48,15 @@ const loginSchema = zod.object({
   password: zod.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
 });
 
+const serviceSchema = zod.object({
+  name: zod.string().min(1, "Nome é obrigatório"),
+  description: zod.string().min(1, "Descrição é obrigatória"),
+  price: zod.number().min(1, "Preço deve ser maior que 0"),
+  duration: zod.number().min(1, "Duração deve ser maior que 0"),
+  categoryId: zod.string().min(1, "Selecione uma categoria"),
+  photoUrl: zod.string().optional(),
+});
+
 const profileSchema = zod.object({
   username: zod
     .string()
@@ -115,5 +124,6 @@ export {
   loginSchema,
   bookingSchema,
   AppointmentSchema,
+  serviceSchema,
   profileSchema,
 };

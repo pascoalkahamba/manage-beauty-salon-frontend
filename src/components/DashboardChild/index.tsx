@@ -45,6 +45,8 @@ export default function DashboardChild() {
       </p>
     );
 
+  console.log("allServices", allServices);
+
   return (
     <div className="flex items-center gap-3 w-full mt-10 flex-wrap justify-center">
       {allServices.map((service) => (

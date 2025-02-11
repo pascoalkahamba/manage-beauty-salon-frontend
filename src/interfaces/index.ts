@@ -163,6 +163,18 @@ export interface IAppointment {
   client: IClient;
 }
 
+export interface IServiceToCreate {
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  categoryId: number;
+  photo: Blob;
+}
+
+export interface IUpdateService extends IServiceToCreate {
+  id: number;
+}
 export interface IAppointmentStatusResponse {
   id: number;
   clientId: number;
