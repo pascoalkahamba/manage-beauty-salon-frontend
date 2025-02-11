@@ -302,6 +302,8 @@ export default function EmployeeAppointmentsModal({
                         {currentService && (
                           <DeleteConfirmationModal
                             type="deleteAppointment"
+                            description="Você tem certeza que desejas eliminar este agendamento?"
+                            title="Eliminar Agendamento"
                             isPending={isPendingAppointment}
                             opened={openDeleteAppointment}
                             setOpened={setOpenDeleteAppointment}

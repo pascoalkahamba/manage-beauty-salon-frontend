@@ -26,6 +26,8 @@ import {
   CREATECARTROUTE,
   DELETEAPPOINTMENTROUTE,
   DELETECARTROUTE,
+  DELETECLIENTROUTE,
+  DELETEEMPLOYEEROUTE,
   GETALLACADEMICLEVELSROUTE,
   GETALLAPPOINTMENTSROUTE,
   GETALLCARTSROUTE,
@@ -208,4 +210,11 @@ export async function updateCart(cart: IUpdateCart) {
   const response = await axiosApp.post(`${UPDATECARTROUTE}/${cart.id}`, cart);
   const cartUpdated = response.data;
   return cartUpdated as unknown as ICart;
+}
+
+export async function deleteUserAccount(userId: number, role: TRole) {
+  const url = role === "EMPLOYEE" ? DELETEEMPLOYEEROUTE : DELETECLIENTROUTE;
+  const response = await axiosApp.delete(`${url}/${userId}`);
+  const user = response.data;
+  return user as unknown as IUser;
 }

@@ -14,7 +14,6 @@ import cx from "clsx";
 import {
   Avatar,
   Burger,
-  Button,
   Container,
   Group,
   Menu,
@@ -25,25 +24,48 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "@/components/Header/styles.module.css";
-import { IAppointment, ICurrentUser } from "@/interfaces";
-import { useQuery } from "@tanstack/react-query";
-import { getAllCategories, getUserById } from "@/servers";
+import { ICurrentUser } from "@/interfaces";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { deleteUserAccount, getAllCategories, getUserById } from "@/servers";
 import CartHeaderIcon from "@/components/CartHeaderIcon";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import CartModal, { CartAppointment } from "@/components/CartModal";
+import { notifications } from "@mantine/notifications";
+import DeleteConfirmationModal from "../DeleteConfirmationModal";
 
 export default function Header() {
   const theme = useMantineTheme();
   const [opened, { toggle }] = useDisclosure(false);
   const router = useRouter();
   const [userMenuOpened, setUserMenuOpened] = useState(false);
+  const [openDeleteAccountModal, setOpenDeleteAccountModal] = useState(false);
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
   const { data: user } = useQuery({
     queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
     queryFn: () => getUserById(currentUser.id, currentUser.role),
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => deleteUserAccount(currentUser.id, currentUser.role),
+    onSuccess: () => {
+      notifications.show({
+        title: "Eliminação de conta",
+        message: "Conta eliminada com sucesso!",
+        color: "green",
+        position: "top-right",
+      });
+      router.push("/signIn");
+    },
+    onError: () => {
+      notifications.show({
+        title: "Eliminação de conta",
+        message: "Erro ao eliminar conta!",
+        color: "red",
+        position: "top-right",
+      });
+    },
   });
 
   const { data: allCategories } = useQuery({
@@ -53,8 +75,19 @@ export default function Header() {
 
   function logout() {
     router.push("/signIn");
-    // localStorage.removeItem("userInfo");
   }
+
+  const deleteAccount = async () => mutate();
+
+  // if (isPending) {
+  //   notifications.show({
+  //     title: "Eliminação de conta",
+  //     message: "Aguarde um momento...",
+  //     color: "yellow",
+  //     position: "top-right",
+  //   });
+  //   return;
+  // }
 
   const items = allCategories?.map((category) => (
     <Tabs.Tab value={`${category.id}`} key={category.id}>
@@ -62,62 +95,6 @@ export default function Header() {
     </Tabs.Tab>
   ));
 
-  const sampleAppointments: CartAppointment[] = [
-    {
-      id: "1",
-      serviceName: "Hair Coloring",
-      employeeName: "John Smith",
-      date: new Date(),
-      time: "14:30",
-      price: 150,
-      duration: 120,
-    },
-    {
-      id: "2",
-      serviceName: "Haircut",
-      employeeName: "Jane Doe",
-      date: new Date(),
-      time: "16:30",
-      price: 80,
-      duration: 60,
-    },
-  ];
-
-  const handleDeleteAppointment = async (id: string) => {
-    // Implement API call
-    console.log(`Deleting appointment ${id}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const handleUpdateAppointment = async (
-    id: string,
-    date: Date,
-    time: string
-  ) => {
-    // Implement API call
-    console.log(`Updating appointment ${id} to ${date} ${time}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const handleScheduleAppointment = async (id: string) => {
-    // Implement API call
-    console.log(`Scheduling appointment ${id}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const handleScheduleAll = async () => {
-    // Implement API call
-    console.log("Scheduling all appointments");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  const handleClearCart = async () => {
-    // Implement API call
-    console.log("Clearing cart");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  };
-
-  console.log("user", user);
   return (
     <div className={classes.header}>
       <Container className={classes.mainSection} size="md">
@@ -210,15 +187,13 @@ export default function Header() {
                 <Menu.Label>Zona de risco</Menu.Label>
                 <Menu.Item
                   color="red"
+                  onClick={() => setOpenDeleteAccountModal(true)}
                   leftSection={<IconTrash size={16} stroke={1.5} />}
                 >
                   Eliminar conta
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
-            {user?.role === "CLIENT" && (
-              <CartHeaderIcon itemCount={user?.cart?.appointment.length} />
-            )}
           </Group>
         </Group>
       </Container>
@@ -235,6 +210,17 @@ export default function Header() {
         >
           <Tabs.List>{items}</Tabs.List>
         </Tabs>
+        {openDeleteAccountModal && (
+          <DeleteConfirmationModal
+            title="Eliminar conta"
+            description="Tem certeza que quer eliminar a sua conta?"
+            isPending={isPending}
+            opened={openDeleteAccountModal}
+            setOpened={setOpenDeleteAccountModal}
+            type="deleteUserAccount"
+            onConfirmDelete={deleteAccount}
+          />
+        )}
       </Container>
     </div>
   );

@@ -18,7 +18,7 @@ export type TRole = "EMPLOYEE" | "CLIENT" | "MANAGER";
 export type TDeleteModal =
   | "deleteAppointment"
   | "deleteService"
-  | "deleteUser"
+  | "deleteUserAccount"
   | "deleteCategory";
 export type TStatus = "PENDING" | "CONFIRMED" | "CANCELED" | "COMPLETED";
 export type TOpenModal =

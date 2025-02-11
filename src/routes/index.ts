@@ -4,6 +4,7 @@ const CREATEACCOUNTEMPLOYEEROUTE = "/employee/create";
 const GETALLEMPLOYEESROUTE = "/employee/getAllEmployees";
 const GETEMPLOYEEBYIDROUTE = "/employee/getOneEmployee";
 const UPDATEEMPLOYEEROUTE = "/employee/updateInfoProfile";
+const DELETEEMPLOYEEROUTE = "/employee/deleteEmployee";
 
 // clients routes
 const CREATEACCOUNTCLIENTROUTE = "/client/create";
@@ -11,6 +12,7 @@ const SIGNINCLIENTROUTE = "/client/login";
 const GETALLCLIENTSROUTE = "/client/getAllClients";
 const GETCLIENTBYIDROUTE = "/client/getOneClient";
 const UPDATECLIENTROUTE = "/client/updateInfoProfile";
+const DELETECLIENTROUTE = "/client/deleteClient";
 
 // category routes
 const GETALLCATEGORIESROUTE = "/category/getAllCategories";
@@ -65,6 +67,8 @@ export {
   CREATECATEGORYROUTE,
   UPDATECATEGORYROUTE,
   DELETESERVICEROUTE,
+  DELETECLIENTROUTE,
+  DELETEEMPLOYEEROUTE,
   CREATESERVICEROUTE,
   UPDATESERVICEROUTE,
   CREATECARTROUTE,

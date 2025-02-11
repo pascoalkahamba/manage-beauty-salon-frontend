@@ -8,8 +8,10 @@ interface DeleteConfirmationModalProps {
   setOpened: Dispatch<SetStateAction<boolean>>;
   opened: boolean;
   isPending: boolean;
+  title: string;
+  description: string;
   type: TDeleteModal;
-  appointment: IAppointment;
+  appointment?: IAppointment;
   onConfirmDelete: () => Promise<void>;
 }
 
@@ -17,6 +19,9 @@ export default function DeleteConfirmationModal({
   opened,
   setOpened,
   isPending,
+  title,
+  type,
+  description,
   appointment,
   onConfirmDelete,
 }: DeleteConfirmationModalProps) {
@@ -32,24 +37,20 @@ export default function DeleteConfirmationModal({
   };
 
   return (
-    <Modal
-      opened={opened}
-      onClose={onClose}
-      title="Eliminar Agendamento"
-      centered
-      size="sm"
-    >
+    <Modal opened={opened} onClose={onClose} title={title} centered size="sm">
       <Stack spacing="md">
-        <Text>Você tem certeza que desejas eliminar este agendamento?</Text>
+        <Text>{description}</Text>
 
-        <Stack spacing="xs">
-          <Text size="sm" weight={500}>
-            {appointment.service.name}
-          </Text>
-          <Text size="sm" color="dimmed">
-            {formatDate(appointment.date)} ás {appointment.hour}
-          </Text>
-        </Stack>
+        {type === "deleteAppointment" && appointment && (
+          <Stack spacing="xs">
+            <Text size="sm" weight={500}>
+              {appointment.service.name}
+            </Text>
+            <Text size="sm" color="dimmed">
+              {formatDate(appointment.date)} ás {appointment.hour}
+            </Text>
+          </Stack>
+        )}
 
         <Text size="sm" color="red">
           Atenção: Esta ação não pode ser desfeita.
