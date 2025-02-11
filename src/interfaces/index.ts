@@ -215,7 +215,7 @@ export interface IService {
   price: number;
   duration: number;
   picture: IPicture;
-  categoryId: number;
+  categoryId: string;
   employees: IEmployee[];
   category: ICategory;
 }

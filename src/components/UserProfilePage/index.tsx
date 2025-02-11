@@ -17,6 +17,7 @@ import {
   createService,
   getAllServices,
   getUserById,
+  updaateService,
   updateUserProfile,
 } from "@/servers";
 import SkeletonComponent from "@/components/Skeleton";
@@ -28,6 +29,7 @@ import { modalAtom } from "@/storage/atom";
 import {
   ICurrentUser,
   IServiceToCreate,
+  IUpdateService,
   IUpdateUserProfile,
 } from "@/interfaces";
 import { notifications } from "@mantine/notifications";
@@ -47,6 +49,30 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     queryKey: ["getAllServices"],
     queryFn: getAllServices,
   });
+
+  const { mutate: mutateUpdateService, isPending: isPendingEditService } =
+    useMutation({
+      mutationFn: (values: IUpdateService) => updaateService(values),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["getAllServices"],
+        });
+        notifications.show({
+          title: "Atualização de serviço",
+          message: "Serviço atualizado com sucesso!",
+          color: "green",
+          position: "top-right",
+        });
+      },
+      onError: (error) => {
+        notifications.show({
+          title: "Atualização de serviço",
+          message: "Erro ao atualizar serviço!",
+          color: "red",
+          position: "top-right",
+        });
+      },
+    });
 
   const { mutate: mutateCreateService, isPending: isPendingCreateService } =
     useMutation({
@@ -124,12 +150,24 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     });
   };
 
-  const handleUpdateService = async (
-    id: string,
-    service: Omit<ICreateService, "id">
-  ) => {
-    console.log(`Updating service ${id}:`, service);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  const handleUpdateService = async (id: number, service: IServiceToCreate) => {
+    let photoData: Blob = service.photo;
+
+    if (service.photo instanceof File) {
+      // Convert file to base64
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(service.photo);
+      });
+      photoData = base64 as Blob;
+    }
+
+    mutateUpdateService({
+      ...service,
+      id,
+      photo: photoData,
+    });
   };
 
   const handleDeleteService = async (id: string) => {
@@ -323,7 +361,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
               }
               services={serviceData}
               onAddService={handleAddService}
-              isPendingEdit={false}
+              isPendingEdit={isPendingEditService}
               isPendingAdd={isPendingCreateService}
               onUpdateService={handleUpdateService}
               onDeleteService={handleDeleteService}

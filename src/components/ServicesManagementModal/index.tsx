@@ -194,8 +194,8 @@ interface ServicesManagementModalProps {
   isPendingEdit: boolean;
   isPendingAdd: boolean;
   onAddService: (service: ICreateService) => Promise<void>;
-  onUpdateService: (id: string, service: ICreateService) => Promise<void>;
-  onDeleteService: (id: string) => Promise<void>;
+  onUpdateService: (id: number, service: ICreateService) => Promise<void>;
+  onDeleteService: (id: number) => Promise<void>;
 }
 
 export default function ServicesManagementModal({
@@ -210,12 +210,8 @@ export default function ServicesManagementModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [formDrawerOpened, setFormDrawerOpened] = useState(false);
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
-  const [editingService, setEditingService] = useState<ICreateService | null>(
-    null
-  );
-  const [selectedService, setSelectedService] = useState<ICreateService | null>(
-    null
-  );
+  const [editingService, setEditingService] = useState<IService | null>(null);
+  const [selectedService, setSelectedService] = useState<IService | null>(null);
   const [loading, setLoading] = useState(false);
 
   const { convertMinutes } = useTimeConverter();
@@ -240,7 +236,7 @@ export default function ServicesManagementModal({
     setEditingService(null);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     await onDeleteService(id);
     setDeleteModalOpened(false);
     setSelectedService(null);
