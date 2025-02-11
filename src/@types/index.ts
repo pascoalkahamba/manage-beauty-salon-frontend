@@ -27,6 +27,7 @@ export type TOpenModal =
   | "updateAppointment"
   | "editProfileInfo"
   | "appointmentService"
+  | "openModalServices"
   | "none"
   | "deleteAppointment"
   | "deleteAccount"

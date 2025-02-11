@@ -84,7 +84,7 @@ export async function getAllCategories() {
 
 export async function updateUserProfile(userInfo: IUpdateUserProfile) {
   const currentRoute =
-    userInfo.role === "EMPLOYEE" ? UPDATEEMPLOYEEROUTE : UPDATECLIENTROUTE;
+    userInfo.role !== "CLIENT" ? UPDATEEMPLOYEEROUTE : UPDATECLIENTROUTE;
   const response = await axiosApp.post(
     `${currentRoute}/${userInfo.id}`,
     userInfo

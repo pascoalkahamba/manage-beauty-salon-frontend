@@ -65,7 +65,8 @@ const profileSchema = zod.object({
     .number()
     .array()
     .min(1, "Selecione pelo menos um serviço.")
-    .optional(),
+    .optional()
+    .nullable(),
   categoriesIds: zod
     .number()
     .array()

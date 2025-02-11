@@ -27,7 +27,6 @@ import classes from "@/components/Header/styles.module.css";
 import { ICurrentUser } from "@/interfaces";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { deleteUserAccount, getAllCategories, getUserById } from "@/servers";
-import CartHeaderIcon from "@/components/CartHeaderIcon";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { notifications } from "@mantine/notifications";

@@ -206,7 +206,7 @@ export default function EditProfileModal({
               searchable
             />
           )}
-          {currentUser.role === "EMPLOYEE" && (
+          {currentUser.role !== "CLIENT" && (
             <MultiSelect
               label="Escolhe seus serviços"
               data={allServices?.map((service) => ({
@@ -224,7 +224,7 @@ export default function EditProfileModal({
               required
             />
           )}{" "}
-          {currentUser.role === "EMPLOYEE" && (
+          {currentUser.role !== "CLIENT" && (
             <Select
               label="Escolhe seu nível acadêmico"
               placeholder="Escolhe seu nível acadêmico"
@@ -237,15 +237,15 @@ export default function EditProfileModal({
             />
           )}{" "}
           <div className="flex items-center gap-6 w-full">
+            <Button color="red" onClick={onClose}>
+              Cancelar
+            </Button>
             <CustomButton
               type="submit"
               target="Salvar"
               targetPedding="Salvando..."
               isPending={isPending}
             />
-            <Button color="red" onClick={onClose}>
-              Cancelar
-            </Button>
           </div>
         </Stack>
       </form>

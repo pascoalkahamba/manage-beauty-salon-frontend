@@ -22,6 +22,9 @@ import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
 import { ICurrentUser, IUpdateUserProfile } from "@/interfaces";
 import { notifications } from "@mantine/notifications";
+import ServicesManagementModal, {
+  ServiceType,
+} from "@/components/ServicesManagementModal";
 
 interface UserProfilePageProps {
   id: number;
@@ -65,6 +68,62 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
       });
     },
   });
+
+  const sampleServices: ServiceType[] = [
+    {
+      id: "1",
+      name: "Haircut",
+      category: "Hair Care",
+      price: 50,
+      duration: 45,
+    },
+    {
+      id: "2",
+      name: "Manicure",
+      category: "Nail Care",
+      price: 35,
+      duration: 60,
+    },
+    {
+      id: "2",
+      name: "Manicure",
+      category: "Nail Care",
+      price: 35,
+      duration: 60,
+    },
+    {
+      id: "3",
+      name: "Manicure",
+      category: "Nail Care",
+      price: 35,
+      duration: 60,
+    },
+    {
+      id: "4",
+      name: "Manicure",
+      category: "Nail Care",
+      price: 35,
+      duration: 60,
+    },
+  ];
+
+  const handleAddService = async (service: Omit<ServiceType, "id">) => {
+    console.log("Adding service:", service);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
+  const handleUpdateService = async (
+    id: string,
+    service: Omit<ServiceType, "id">
+  ) => {
+    console.log(`Updating service ${id}:`, service);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
+  const handleDeleteService = async (id: string) => {
+    console.log(`Deleting service ${id}`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  };
 
   const handleSubmit = async (values: IUpdateUserProfile) => {
     let photoData: Blob = values.photo;
@@ -137,6 +196,12 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
       status: true,
     });
   };
+  const openListOfServices = () => {
+    setModalOpened({
+      type: "openModalServices",
+      status: true,
+    });
+  };
 
   return (
     <div
@@ -167,7 +232,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
               <IconClock size={20} />
               <Text>Disponível: Todos os dias</Text>
             </Group>
-            {role === "EMPLOYEE" ? (
+            {role !== "CLIENT" ? (
               <Group>
                 <IconCalendarEvent size={20} />
                 Especialidades:{" "}
@@ -189,15 +254,26 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
             <Text>{user?.profile.bio}</Text>
             <Divider />
             <div className="flex gap-2 items-center w-full">
-              {heCan && (
-                <Button
-                  variant="light"
-                  color="orange"
-                  onClick={openListOfAppointments}
-                >
-                  Agendamentos
-                </Button>
-              )}
+              {heCan &&
+                (role === "EMPLOYEE" ? (
+                  <Button
+                    variant="light"
+                    color="orange"
+                    onClick={openListOfAppointments}
+                  >
+                    Agendamentos
+                  </Button>
+                ) : (
+                  role === "MANAGER" && (
+                    <Button
+                      variant="light"
+                      color="orange"
+                      onClick={openListOfServices}
+                    >
+                      Serviços
+                    </Button>
+                  )
+                ))}
               {heCan && (
                 <Button
                   variant="light"
@@ -209,13 +285,13 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
                   Editar
                 </Button>
               )}
-              {currentUser.role === "EMPLOYEE" && availability ? (
+              {currentUser.role !== "CLIENT" && availability ? (
                 <Button variant="light" color="red" fullWidth={!heCan}>
                   Ocupado
                 </Button>
               ) : (
                 <Button variant="light" color="green" fullWidth={!heCan}>
-                  {role === "EMPLOYEE" ? "Disponível" : "Activo"}
+                  {role !== "CLIENT" ? "Disponível" : "Activo"}
                 </Button>
               )}
             </div>
@@ -226,6 +302,17 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
               setModalOpened({ type: "listOfAppointments", status: false })
             }
             appointments={user.appointments}
+          />
+
+          <ServicesManagementModal
+            opened={true}
+            onClose={() =>
+              setModalOpened({ type: "openModalServices", status: false })
+            }
+            services={sampleServices}
+            onAddService={handleAddService}
+            onUpdateService={handleUpdateService}
+            onDeleteService={handleDeleteService}
           />
 
           <EditProfileModal
