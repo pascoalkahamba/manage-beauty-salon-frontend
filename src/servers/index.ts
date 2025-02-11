@@ -59,7 +59,7 @@ export async function createAccount(userInfo: ICreateAccount) {
   console.log("userInfo", userInfo);
 
   const responses = await axiosApp.post(
-    role === "EMPLOYEE" ? CREATEACCOUNTEMPLOYEEROUTE : CREATEACCOUNTCLIENTROUTE,
+    role !== "CLINT" ? CREATEACCOUNTEMPLOYEEROUTE : CREATEACCOUNTCLIENTROUTE,
     userInfo
   );
 
@@ -71,7 +71,7 @@ export async function login(userInfo: ILogin) {
   const { role } = userInfo;
 
   const response = await axiosApp.post(
-    role === "EMPLOYEE" || role === "MANAGER"
+    role !== "CLINT" || role === "MANAGER"
       ? SIGNINEMPLOYEEROUTE
       : SIGNINCLIENTROUTE,
     userInfo
@@ -115,7 +115,7 @@ export async function updateStatusAppointment(
 
 export async function getUserById(userId: number, role: TRole) {
   const url =
-    role === "EMPLOYEE" || role === "MANAGER"
+    role !== "CLINT" || role === "MANAGER"
       ? GETEMPLOYEEBYIDROUTE
       : GETCLIENTBYIDROUTE;
   const response = await axiosApp.get(`${url}/${userId}`);
@@ -238,7 +238,7 @@ export async function updateCart(cart: IUpdateCart) {
 }
 
 export async function deleteUserAccount(userId: number, role: TRole) {
-  const url = role === "EMPLOYEE" ? DELETEEMPLOYEEROUTE : DELETECLIENTROUTE;
+  const url = role !== "CLIENT" ? DELETEEMPLOYEEROUTE : DELETECLIENTROUTE;
   const response = await axiosApp.delete(`${url}/${userId}`);
   const user = response.data;
   return user as unknown as IUser;

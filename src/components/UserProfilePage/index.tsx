@@ -11,10 +11,11 @@ import {
   Divider,
 } from "@mantine/core";
 import { IconClock, IconCalendarEvent } from "@tabler/icons-react";
-import { ICreateService, TRole } from "@/@types";
+import { TRole } from "@/@types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createService,
+  deleteService,
   getAllServices,
   getUserById,
   updaateService,
@@ -33,9 +34,7 @@ import {
   IUpdateUserProfile,
 } from "@/interfaces";
 import { notifications } from "@mantine/notifications";
-import ServicesManagementModal, {
-  ICreateService,
-} from "@/components/ServicesManagementModal";
+import ServicesManagementModal from "@/components/ServicesManagementModal";
 
 interface UserProfilePageProps {
   id: number;
@@ -49,6 +48,30 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     queryKey: ["getAllServices"],
     queryFn: getAllServices,
   });
+
+  const { mutate: mutateDeleteService, isPending: isPendingDeleteService } =
+    useMutation({
+      mutationFn: (id: number) => deleteService(id),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["getAllServices"],
+        });
+        notifications.show({
+          title: "Exclusão de serviço",
+          message: "Serviço excluído com sucesso!",
+          color: "green",
+          position: "top-right",
+        });
+      },
+      onError: (error) => {
+        notifications.show({
+          title: "Exclusão de serviço",
+          message: "Erro ao excluir serviço!",
+          color: "red",
+          position: "top-right",
+        });
+      },
+    });
 
   const { mutate: mutateUpdateService, isPending: isPendingEditService } =
     useMutation({
@@ -170,9 +193,9 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     });
   };
 
-  const handleDeleteService = async (id: string) => {
+  const handleDeleteService = async (id: number) => {
     console.log(`Deleting service ${id}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    mutateDeleteService(id);
   };
 
   const handleSubmit = async (values: IUpdateUserProfile) => {
