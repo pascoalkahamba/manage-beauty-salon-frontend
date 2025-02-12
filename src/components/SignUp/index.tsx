@@ -142,7 +142,7 @@ export default function SignUp(props: PaperProps) {
       username,
       email,
       password,
-      academicLevelId: Number(academicLevelId),
+      academicLevelId: academicLevelId as string,
       validationCode,
       role: values.terms ? "EMPLOYEE" : "CLIENT",
       cellphone,

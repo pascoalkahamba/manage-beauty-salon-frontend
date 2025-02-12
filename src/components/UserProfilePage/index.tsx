@@ -252,7 +252,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     email: user.email,
     cellphone: user.cellphone,
     servicesIds: user.services?.map((service) => service.id),
-    academicLevelId: user.academicLevel?.id,
+    academicLevelId: String(user.academicLevel?.id),
     password: "",
     categoriesIds: user.categories?.map((category) => category.id),
     bio: user.profile.bio,
@@ -301,10 +301,12 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
           <Stack spacing="md">
             <Title order={2}>Informações</Title>
             <Divider />
-            <Group>
-              <IconClock size={20} />
-              <Text>Disponível: Todos os dias</Text>
-            </Group>
+            {role !== "CLIENT" && (
+              <Group>
+                <IconClock size={20} />
+                <Text>Disponível: Todos os dias</Text>
+              </Group>
+            )}
             {role !== "CLIENT" ? (
               <Group>
                 <IconCalendarEvent size={20} />
@@ -328,7 +330,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
             <Divider />
             <div className="flex gap-2 items-center w-full">
               {heCan &&
-                (role === "EMPLOYEE" ? (
+                (role !== "MANAGER" ? (
                   <Button
                     variant="light"
                     color="orange"

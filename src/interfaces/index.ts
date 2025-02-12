@@ -8,7 +8,7 @@ export interface ICreateAccount {
   role: TRole;
   servicesIds?: number[];
   validationCode?: string;
-  academicLevelId?: number;
+  academicLevelId?: string;
   categoriesIds?: number[];
 }
 
@@ -53,7 +53,7 @@ export interface IUpdateUserProfile {
   cellphone: string;
   categoriesIds?: number[];
   role: TRole;
-  academicLevelId?: number;
+  academicLevelId?: string;
   servicesIds?: number[];
   photo: Blob;
   bio: string;

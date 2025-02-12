@@ -53,7 +53,7 @@ export default function ServiceCard({
     picture: image,
     id: serviceId,
     duration,
-    categoryId: category.id,
+    categoryId: String(category.id),
     employees,
     category,
   };
@@ -125,7 +125,7 @@ export default function ServiceCard({
     // Implement direct booking logic
     mutate({
       clientId: currentUser.id,
-      serviceId: serviceId,
+      serviceId: currentService?.id as number,
       date: item.date,
       hour: item.hour,
       employeeId: +item.employeeId,

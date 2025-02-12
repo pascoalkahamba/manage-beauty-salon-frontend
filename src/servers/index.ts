@@ -59,7 +59,7 @@ export async function createAccount(userInfo: ICreateAccount) {
   console.log("userInfo", userInfo);
 
   const responses = await axiosApp.post(
-    role !== "CLINT" ? CREATEACCOUNTEMPLOYEEROUTE : CREATEACCOUNTCLIENTROUTE,
+    role !== "CLIENT" ? CREATEACCOUNTEMPLOYEEROUTE : CREATEACCOUNTCLIENTROUTE,
     userInfo
   );
 
@@ -71,9 +71,7 @@ export async function login(userInfo: ILogin) {
   const { role } = userInfo;
 
   const response = await axiosApp.post(
-    role !== "CLINT" || role === "MANAGER"
-      ? SIGNINEMPLOYEEROUTE
-      : SIGNINCLIENTROUTE,
+    role !== "CLIENT" ? SIGNINEMPLOYEEROUTE : SIGNINCLIENTROUTE,
     userInfo
   );
 
@@ -114,10 +112,7 @@ export async function updateStatusAppointment(
 }
 
 export async function getUserById(userId: number, role: TRole) {
-  const url =
-    role !== "CLINT" || role === "MANAGER"
-      ? GETEMPLOYEEBYIDROUTE
-      : GETCLIENTBYIDROUTE;
+  const url = role !== "CLIENT" ? GETEMPLOYEEBYIDROUTE : GETCLIENTBYIDROUTE;
   const response = await axiosApp.get(`${url}/${userId}`);
   const user = response.data;
   return user as unknown as IUser;

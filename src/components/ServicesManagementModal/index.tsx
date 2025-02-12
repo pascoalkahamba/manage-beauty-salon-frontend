@@ -14,7 +14,6 @@ import {
   Drawer,
   Badge,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import {
   IconSearch,
   IconEdit,
@@ -237,9 +236,11 @@ export default function ServicesManagementModal({
   };
 
   const handleDelete = async (id: number) => {
+    setLoading(true);
     await onDeleteService(id);
     setDeleteModalOpened(false);
     setSelectedService(null);
+    setLoading(false);
   };
   return (
     <>
