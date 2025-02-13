@@ -33,6 +33,8 @@ export type TOpenModal =
   | "none"
   | "deleteAppointment"
   | "deleteAccount"
+  | "openListOfCategories"
+  | "addNewCategory"
   | "openCart";
 
 export type TTypeButton = "button" | "submit" | "reset" | undefined;

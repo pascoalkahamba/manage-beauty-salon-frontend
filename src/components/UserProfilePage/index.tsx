@@ -16,6 +16,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createService,
   deleteService,
+  getAllCategories,
   getAllServices,
   getUserById,
   updaateService,
@@ -27,6 +28,13 @@ import EmployeeAppointmentsModal from "@/components/EmployeeAppointmentsModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
+import { useState } from "react";
+import {
+  CategoriesModal,
+  Category,
+  CategoryFormModal,
+} from "@/components/CategoryManagementModals";
+
 import {
   ICurrentUser,
   IServiceToCreate,
@@ -35,6 +43,7 @@ import {
 } from "@/interfaces";
 import { notifications } from "@mantine/notifications";
 import ServicesManagementModal from "@/components/ServicesManagementModal";
+import MenuInfo from "../MenuInfo";
 
 interface UserProfilePageProps {
   id: number;
@@ -43,6 +52,126 @@ interface UserProfilePageProps {
 
 export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   const [modalOpened, setModalOpened] = useAtom(modalAtom);
+  const [categoriesModalOpened, setCategoriesModalOpened] = useState(false);
+  const [categoryFormModalOpened, setCategoryFormModalOpened] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<
+    Category | undefined
+  >(undefined);
+
+  const { data: categorieds, isPending: isPendingCategory } = useQuery({
+    queryKey: ["getAllCategories"],
+    queryFn: getAllCategories,
+  });
+  // Example categories data
+  const [categories, setCategories] = useState<Category[]>([
+    {
+      id: "1",
+      name: "Cortes de Cabelo",
+      description: "Diversos tipos de cortes de cabelo",
+      services: [
+        {
+          id: "1",
+          name: "Corte Masculino",
+          description: "Corte tradicional masculino",
+          price: 50.0,
+          duration: 30,
+        },
+        // More services...
+      ],
+    },
+    // More categories...
+  ]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      // Add your API call here
+      // await deleteCategory(id);
+
+      setCategories(categories.filter((category) => category.id !== id));
+      notifications.show({
+        title: "Success",
+        message: "Category deleted successfully",
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: "Failed to delete category",
+        color: "red",
+      });
+    }
+  };
+
+  const handleEdit = (category: Category) => {
+    setSelectedCategory(category);
+    setCategoryFormModalOpened(true);
+  };
+
+  const handleAdd = () => {
+    setSelectedCategory(undefined);
+    setCategoryFormModalOpened(true);
+  };
+
+  const handleSubmitCategory = async (values: CategoryFormValues) => {
+    try {
+      // Handle file uploads for all services
+      const servicesWithUrls = await Promise.all(
+        values.services.map(async (service) => {
+          let photoUrl = undefined;
+          if (service.photo) {
+            const formData = new FormData();
+            formData.append("photo", service.photo);
+            // Add your photo upload API call here
+            // const uploadResult = await uploadPhoto(formData);
+            // photoUrl = uploadResult.url;
+          }
+          return { ...service, photoUrl };
+        })
+      );
+
+      if (selectedCategory) {
+        // Update existing category
+        // Add your API call here
+        // await updateCategory({ ...values, id: selectedCategory.id, services: servicesWithUrls });
+
+        setCategories(
+          categories.map((category) =>
+            category.id === selectedCategory.id
+              ? { ...category, ...values, services: servicesWithUrls }
+              : category
+          )
+        );
+      } else {
+        // Add new category
+        // Add your API call here
+        // const newCategory = await createCategory({ ...values, services: servicesWithUrls });
+
+        setCategories([
+          ...categories,
+          {
+            ...values,
+            id: Date.now().toString(), // Replace with actual ID from API
+            services: servicesWithUrls,
+          },
+        ]);
+      }
+
+      notifications.show({
+        title: "Success",
+        message: `Category ${
+          selectedCategory ? "updated" : "added"
+        } successfully`,
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: `Failed to ${selectedCategory ? "update" : "add"} category`,
+        color: "red",
+      });
+    }
+  };
+
   const queryClient = useQueryClient();
   const { data: serviceData } = useQuery({
     queryKey: ["getAllServices"],
@@ -369,6 +498,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
                   {role !== "CLIENT" ? "Disponível" : "Activo"}
                 </Button>
               )}
+              {role === "MANAGER" && <MenuInfo />}
             </div>
           </Stack>
 
@@ -402,6 +532,31 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
             onSubmit={handleSubmit}
           />
         </Card>
+        <div>
+          <Button
+            onClick={() =>
+              setModalOpened({ type: "openListOfCategories", status: true })
+            }
+          >
+            Manage Categories
+          </Button>
+
+          <CategoriesModal
+            opened={categoriesModalOpened}
+            onClose={() => setCategoriesModalOpened(false)}
+            categories={categories}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            onAdd={handleAdd}
+          />
+
+          <CategoryFormModal
+            opened={categoryFormModalOpened}
+            onClose={() => setCategoryFormModalOpened(false)}
+            initialData={selectedCategory}
+            onSubmit={handleSubmitCategory}
+          />
+        </div>
       </div>
     </div>
   );
