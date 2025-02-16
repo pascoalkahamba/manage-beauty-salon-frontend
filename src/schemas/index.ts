@@ -48,6 +48,8 @@ const loginSchema = zod.object({
   password: zod.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
 });
 
+// Schema for Category with services
+
 const serviceSchema = zod.object({
   name: zod.string().min(1, "Nome é obrigatório"),
   description: zod.string().min(1, "Descrição é obrigatória"),
@@ -56,6 +58,23 @@ const serviceSchema = zod.object({
   categoryId: zod.string().min(1, "Selecione uma categoria"),
   photoUrl: zod.string().optional(),
 });
+const categoriaSchema = zod.object({
+  name: zod
+    .string()
+    .min(6, "Nome da categoria deve ter pelo menos 6 caracteres"),
+  description: zod
+    .string()
+    .min(10, "Descrição deve ter pelo menos 10 caracteres"),
+  services: zod
+    .array(
+      serviceSchema.omit({ categoryId: true, photoUrl: true }).extend({
+        photo: zod.string().optional(),
+      })
+    )
+    .min(4, "Deve ter pelo menos 4 serviços"),
+});
+
+const updateCategorySchema = categoriaSchema.omit({ services: true });
 
 const profileSchema = zod.object({
   username: zod
@@ -125,5 +144,7 @@ export {
   bookingSchema,
   AppointmentSchema,
   serviceSchema,
+  updateCategorySchema,
+  categoriaSchema,
   profileSchema,
 };

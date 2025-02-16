@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Modal,
   Button,
@@ -16,59 +18,29 @@ import {
   Center,
 } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
-import { z } from "zod";
 import { IconUpload, IconEdit, IconTrash, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
+import { ICategory } from "@/interfaces";
+import { TCategoriaFormValues } from "@/@types";
+import { categoriaSchema } from "@/schemas";
+import useTimeConverter from "@/hooks/useTimeConverter";
+import { formatCurrency } from "@/utils/formatters";
 
 // Types
-export interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: number;
-  photoUrl?: string;
-}
 
-export interface Category {
-  id: string;
-  name: string;
-  description: string;
-  services: Service[];
-}
-
-// Schema for single service validation
-const serviceSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  price: z.number().min(0, "Price must be positive"),
-  duration: z.number().min(1, "Duration must be at least 1 minute"),
-  photo: z.any().optional(),
-});
-
-// Schema for Category with services
-const CategoriaSchema = z.object({
-  name: z.string().min(3, "Category name must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  services: z.array(serviceSchema).min(4, "At least 4 services are required"),
-});
-
-type CategoriaFormValues = z.infer<typeof CategoriaSchema>;
-
-// Categories List Modal
-export interface CategoriesModalProps {
-  opened: boolean;
-  onClose: () => void;
-  categories: Category[];
-  onDelete: (id: string) => void;
-  onEdit: (Category: Category) => void;
+interface CategoriesModalProps {
+  categories: ICategory[];
+  isPending: boolean;
+  onDelete: (category: ICategory) => void;
+  onEdit: (category: ICategory) => void;
   onAdd: () => void;
 }
 
 export function CategoriesModal({
   categories,
+  isPending,
   onDelete,
   onEdit,
   onAdd,
@@ -76,8 +48,23 @@ export function CategoriesModal({
   const [opened, setOpened] = useAtom(modalAtom);
 
   function openAddNewCategoria() {
-    setOpened({ status: true, type: "addNewCategory" });
+    setOpened({ type: "addNewCategory", status: true });
     onAdd();
+  }
+
+  if (isPending) {
+    return (
+      <Modal
+        opened={opened.status && opened.type === "openListOfCategories"}
+        onClose={() => setOpened({ status: false, type: "none" })}
+        title="Todas categorias"
+        size="xl"
+      >
+        <Center>
+          <Text>Carregando...</Text>
+        </Center>
+      </Modal>
+    );
   }
   return (
     <Modal
@@ -89,7 +76,7 @@ export function CategoriesModal({
       <Stack spacing="md">
         <Group position="right">
           <Button
-            leftIcon={<IconPlus size={16} />}
+            leftSection={<IconPlus size={16} />}
             onClick={openAddNewCategoria}
           >
             Adicionar nova categoria
@@ -97,7 +84,7 @@ export function CategoriesModal({
         </Group>
 
         <Table striped highlightOnHover>
-          <thead>
+          <thead style={{ textAlign: "center" }}>
             <tr>
               <th>Nome da categoria</th>
               <th>Descrição</th>
@@ -105,20 +92,25 @@ export function CategoriesModal({
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody>
-            {categories.map((Category) => (
-              <tr key={Category.id}>
-                <td>{Category.name}</td>
-                <td>{Category.description}</td>
-                <td>{Category.services.length}</td>
+          <tbody style={{ textAlign: "center" }}>
+            {categories.map((category) => (
+              <tr key={category.id}>
+                <td>{category.name}</td>
+                <td>{category.description}</td>
+                <td>{category.services.length}</td>
                 <td>
-                  <Group spacing="xs">
-                    <ActionIcon color="blue" onClick={() => onEdit(Category)}>
+                  <Group spacing="xs" justify="center">
+                    <ActionIcon
+                      color="blue"
+                      onClick={() => onEdit(category)}
+                      className="mt-2"
+                    >
                       <IconEdit size={16} />
                     </ActionIcon>
                     <ActionIcon
                       color="red"
-                      onClick={() => onDelete(Category.id)}
+                      onClick={() => onDelete(category)}
+                      className="mt-2"
                     >
                       <IconTrash size={16} />
                     </ActionIcon>
@@ -133,21 +125,22 @@ export function CategoriesModal({
   );
 }
 
-// New Category Form Modal with Services
+// New category Form Modal with Services
 export interface CategoriaFormModalProps {
-  opened: boolean;
-  onClose: () => void;
-  initialData?: Category;
-  onSubmit: (values: CategoriaFormValues) => void;
+  initialData?: ICategory;
+  onSubmit: (values: TCategoriaFormValues) => void;
+  isLoading: boolean;
 }
 
 export function CategoryFormModal({
   initialData,
   onSubmit,
+  isLoading,
 }: CategoriaFormModalProps) {
   const [active, setActive] = useState(0);
   const [opened, setOpened] = useAtom(modalAtom);
 
+  const { convertMinutes } = useTimeConverter();
   const onClose = () => {
     setOpened({ status: false, type: "none" });
   };
@@ -156,7 +149,7 @@ export function CategoryFormModal({
     {}
   );
 
-  const form = useForm<CategoriaFormValues>({
+  const form = useForm<TCategoriaFormValues>({
     initialValues: initialData || {
       name: "",
       description: "",
@@ -165,14 +158,15 @@ export function CategoryFormModal({
         description: "",
         price: 0,
         duration: 30,
-        photo: null,
+        photo: "",
       }),
     },
-    validate: zodResolver(CategoriaSchema),
+    validate: zodResolver(categoriaSchema),
   });
 
-  const handleSubmit = (values: CategoriaFormValues) => {
+  const handleSubmit = (values: TCategoriaFormValues) => {
     onSubmit(values);
+    console.log("values", values);
     onClose();
     form.reset();
     setActive(0);
@@ -180,20 +174,24 @@ export function CategoryFormModal({
   };
 
   const handleFileChange = (file: File | null, index: number) => {
-    const services = [...form.values.services];
-    services[index] = { ...services[index], photo: file };
-    form.setFieldValue("services", services);
-
-    if (file) {
+    if (file && file instanceof Blob) {
       const reader = new FileReader();
       reader.onload = () => {
+        const base64String = reader.result as string;
+        const services = [...form.values.services];
+        services[index] = { ...services[index], photo: base64String };
+        form.setFieldValue("services", services);
         setServicePhotos((prev) => ({
           ...prev,
-          [index]: reader.result as string,
+          [index]: base64String,
         }));
       };
       reader.readAsDataURL(file);
     } else {
+      // Handle file removal or invalid file
+      const services = [...form.values.services];
+      services[index] = { ...services[index], photo: "" };
+      form.setFieldValue("services", services);
       const newPhotos = { ...servicePhotos };
       delete newPhotos[index];
       setServicePhotos(newPhotos);
@@ -322,8 +320,8 @@ export function CategoryFormModal({
                       </Text>
                     </div>
                     <div>
-                      <Text>R$ {service.price}</Text>
-                      <Text size="sm">{service.duration} min</Text>
+                      <Text>{formatCurrency(service.price)}</Text>
+                      <Text size="sm">{convertMinutes(service.duration)}</Text>
                     </div>
                   </Group>
                 </Card>
@@ -340,7 +338,7 @@ export function CategoryFormModal({
           )}
           {active < 5 && <Button onClick={nextStep}>Proximo</Button>}
           {active === 5 && (
-            <Button type="submit" color="green">
+            <Button type="submit" color="green" loading={isLoading}>
               Salvar
             </Button>
           )}

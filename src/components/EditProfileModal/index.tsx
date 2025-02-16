@@ -24,7 +24,7 @@ import {
 } from "@/servers";
 import { useQuery } from "@tanstack/react-query";
 import CustomButton from "../CustomButton";
-import { IUpdateUserProfile } from "@/@types";
+import { TUpdateUserProfile } from "@/@types";
 import { profileSchema } from "@/schemas";
 
 // Update the schema to include photo
@@ -33,8 +33,8 @@ interface EditProfileModalProps {
   opened: IModalAtom;
   onClose: () => void;
   isPending: boolean;
-  initialData: IUpdateUserProfile;
-  onSubmit: (values: IUpdateUserProfile) => void;
+  initialData: TUpdateUserProfile;
+  onSubmit: (values: TUpdateUserProfile) => void;
 }
 
 export default function EditProfileModal({
@@ -95,12 +95,12 @@ export default function EditProfileModal({
     );
   }, [academicLevelData]);
 
-  const form = useForm<IUpdateUserProfile>({
+  const form = useForm<TUpdateUserProfile>({
     initialValues: initialData,
     validate: zodResolver(profileSchema),
   });
 
-  const handleSubmit = (values: IUpdateUserProfile) => {
+  const handleSubmit = (values: TUpdateUserProfile) => {
     console.log("values", values);
 
     if (!isPending) {

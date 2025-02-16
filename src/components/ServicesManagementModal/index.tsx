@@ -41,11 +41,11 @@ import { IService } from "@/interfaces";
 import useTimeConverter from "@/hooks/useTimeConverter";
 import { formatCurrency } from "@/utils/formatters";
 import { serviceSchema } from "@/schemas";
-import { ICreateService } from "@/@types";
+import { TCreateService } from "@/@types";
 
 interface ServiceFormProps {
-  initialValues?: ICreateService;
-  onSubmit: (values: ICreateService) => Promise<void>;
+  initialValues?: TCreateService;
+  onSubmit: (values: TCreateService) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
 }
@@ -90,7 +90,7 @@ function ServiceForm({
       setPreviewUrl(initialValues?.photoUrl || null);
     }
   };
-  function handleSubmit(values: ICreateService) {
+  function handleSubmit(values: TCreateService) {
     console.log("values", values);
 
     onSubmit(values);
@@ -192,8 +192,8 @@ interface ServicesManagementModalProps {
   services: IService[];
   isPendingEdit: boolean;
   isPendingAdd: boolean;
-  onAddService: (service: ICreateService) => Promise<void>;
-  onUpdateService: (id: number, service: ICreateService) => Promise<void>;
+  onAddService: (service: TCreateService) => Promise<void>;
+  onUpdateService: (id: number, service: TCreateService) => Promise<void>;
   onDeleteService: (id: number) => Promise<void>;
 }
 
@@ -223,12 +223,12 @@ export default function ServicesManagementModal({
       service.category.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAdd = async (values: ICreateService) => {
+  const handleAdd = async (values: TCreateService) => {
     await onAddService(values);
     setFormDrawerOpened(false);
   };
 
-  const handleUpdate = async (values: ICreateService) => {
+  const handleUpdate = async (values: TCreateService) => {
     if (!editingService) return;
     await onUpdateService(editingService.id, values);
     setFormDrawerOpened(false);

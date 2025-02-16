@@ -8,6 +8,8 @@ import {
   ICreateAccountResponse,
   ICreateAppointment,
   ICreateCart,
+  ICreateCategory,
+  IEmployee,
   ILogin,
   ILoginResponse,
   IService,
@@ -15,6 +17,7 @@ import {
   IUpdateAppointment,
   IUpdateAppointmentStatus,
   IUpdateCart,
+  IUpdateCategory,
   IUpdateService,
   IUpdateUserProfile,
   IUser,
@@ -26,9 +29,11 @@ import {
   CREATEACCOUNTEMPLOYEEROUTE,
   CREATEAPPOINTMENTROUTE,
   CREATECARTROUTE,
+  CREATECATEGORYROUTE,
   CREATESERVICEROUTE,
   DELETEAPPOINTMENTROUTE,
   DELETECARTROUTE,
+  DELETECATEGORYROUTE,
   DELETECLIENTROUTE,
   DELETEEMPLOYEEROUTE,
   DELETESERVICEROUTE,
@@ -36,6 +41,7 @@ import {
   GETALLAPPOINTMENTSROUTE,
   GETALLCARTSROUTE,
   GETALLCATEGORIESROUTE,
+  GETALLEMPLOYEESROUTE,
   GETALLSERVICESROUTE,
   GETAPPOINTMENTBYIDROUTE,
   GETCARTBYCLIENTIDROUTE,
@@ -47,6 +53,7 @@ import {
   SIGNINEMPLOYEEROUTE,
   UPDATEAPPOINTMENTROUTE,
   UPDATECARTROUTE,
+  UPDATECATEGORYROUTE,
   UPDATECLIENTROUTE,
   UPDATEEMPLOYEEROUTE,
   UPDATESERVICEROUTE,
@@ -130,6 +137,29 @@ export async function createService(service: IServiceToCreate) {
   return serviceCreated as unknown as IService;
 }
 
+export async function createCategory(category: ICreateCategory) {
+  const response = await axiosApp.post(CREATECATEGORYROUTE, category);
+  const categoryCreated = response.data;
+  return categoryCreated as unknown as ICategory;
+}
+
+export async function updateCategory(category: IUpdateCategory) {
+  const response = await axiosApp.post(
+    `${UPDATECATEGORYROUTE}/${category.id}`,
+    category
+  );
+  const categoryUpdated = response.data;
+  return categoryUpdated as unknown as ICategory;
+}
+
+export async function deleteCategory(categoryId: number) {
+  const response = await axiosApp.delete(
+    `${DELETECATEGORYROUTE}/${categoryId}`
+  );
+  const categoryDeleted = response.data;
+  return categoryDeleted as unknown as ICategory;
+}
+
 export async function updaateService(service: IUpdateService) {
   const response = await axiosApp.post(
     `${UPDATESERVICEROUTE}/${service.id}`,
@@ -154,6 +184,12 @@ export async function getAllAcademicLevels() {
   const response = await axiosApp.get(GETALLACADEMICLEVELSROUTE);
   const academicLevels = response.data;
   return academicLevels as unknown as IAcademicLevel[];
+}
+
+export async function getAllEmployees() {
+  const response = await axiosApp.get(GETALLEMPLOYEESROUTE);
+  const employees = response.data;
+  return employees as unknown as IEmployee[];
 }
 
 export async function creatAppointment(appointment: ICreateAppointment) {

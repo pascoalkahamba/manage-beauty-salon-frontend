@@ -68,7 +68,7 @@ export default function Header() {
   });
 
   const { data: allCategories } = useQuery({
-    queryKey: [`${currentUser.id}-allCategories`],
+    queryKey: ["getAllCategories"],
     queryFn: getAllCategories,
   });
 

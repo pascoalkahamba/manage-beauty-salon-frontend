@@ -11,15 +11,18 @@ import {
   Divider,
 } from "@mantine/core";
 import { IconClock, IconCalendarEvent } from "@tabler/icons-react";
-import { TRole } from "@/@types";
+import { TCategoriaFormValues, TCustomModal, TRole } from "@/@types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  createCategory,
   createService,
+  deleteCategory,
   deleteService,
   getAllCategories,
   getAllServices,
   getUserById,
   updaateService,
+  updateCategory,
   updateUserProfile,
 } from "@/servers";
 import SkeletonComponent from "@/components/Skeleton";
@@ -27,23 +30,28 @@ import { currentUserCanManagerProfile, showNameOfCurrentUser } from "@/utils";
 import EmployeeAppointmentsModal from "@/components/EmployeeAppointmentsModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import { useAtom } from "jotai";
-import { modalAtom } from "@/storage/atom";
+import { customModalAtom, modalAtom } from "@/storage/atom";
 import { useState } from "react";
 import {
   CategoriesModal,
-  Category,
   CategoryFormModal,
 } from "@/components/CategoryManagementModals";
 
 import {
+  ICategory,
+  ICreateCategory,
   ICurrentUser,
   IServiceToCreate,
+  IUpdateCategory,
   IUpdateService,
   IUpdateUserProfile,
 } from "@/interfaces";
 import { notifications } from "@mantine/notifications";
 import ServicesManagementModal from "@/components/ServicesManagementModal";
 import MenuInfo from "../MenuInfo";
+import DeleteConfirmationModal from "../DeleteConfirmationModal";
+import CustomModal from "@/components/CustomModal";
+import EmployeesModal from "../EmployeesModal";
 
 interface UserProfilePageProps {
   id: number;
@@ -52,123 +60,200 @@ interface UserProfilePageProps {
 
 export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   const [modalOpened, setModalOpened] = useAtom(modalAtom);
-  const [categoriesModalOpened, setCategoriesModalOpened] = useState(false);
-  const [categoryFormModalOpened, setCategoryFormModalOpened] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<
-    Category | undefined
-  >(undefined);
+  const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] =
+    useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<ICategory | null>(
+    null
+  );
 
-  const { data: categorieds, isPending: isPendingCategory } = useQuery({
-    queryKey: ["getAllCategories"],
-    queryFn: getAllCategories,
-  });
-  // Example categories data
-  const [categories, setCategories] = useState<Category[]>([
+  const { mutate: mutateUpdateCategory, isPendingUpdateCategory } = useMutation(
     {
-      id: "1",
-      name: "Cortes de Cabelo",
-      description: "Diversos tipos de cortes de cabelo",
-      services: [
-        {
-          id: "1",
-          name: "Corte Masculino",
-          description: "Corte tradicional masculino",
-          price: 50.0,
-          duration: 30,
-        },
-        // More services...
-      ],
-    },
-    // More categories...
-  ]);
+      mutationFn: (values: IUpdateCategory) => updateCategory(values),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["getAllCategories"],
+        });
+        notifications.show({
+          title: "Atualização de categoria",
+          message: "Categoria atualizada com sucesso",
+          color: "green",
+          position: "top-right",
+        });
+      },
+      onError: () => {
+        notifications.show({
+          title: "Atualização de categoria",
+          message: "Erro ao atualizar categoria",
+          color: "red",
+          position: "top-right",
+        });
+      },
+    }
+  );
 
-  const handleDelete = async (id: string) => {
-    try {
-      // Add your API call here
-      // await deleteCategory(id);
+  const [customModalOpened, setCustomModalOpened] = useAtom(customModalAtom);
+  const [selectedItem, setSelectedItem] = useState<{
+    id?: number;
+    name: string;
+    description: string;
+  } | null>(null);
 
-      setCategories(categories.filter((category) => category.id !== id));
-      notifications.show({
-        title: "Success",
-        message: "Category deleted successfully",
-        color: "green",
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to delete category",
-        color: "red",
-      });
+  const handleOperation = (type: TCustomModal, item?: typeof selectedItem) => {
+    setCustomModalOpened({ type: type, status: true });
+    setSelectedItem(item || null);
+  };
+
+  const handleSubmitCustomModal = async (values: {
+    id?: number;
+    name: string;
+    description: string;
+  }) => {
+    // Handle different operations based on modalType
+    switch (customModalOpened.type) {
+      case "editCategory":
+        mutateUpdateCategory({
+          id: values.id as number,
+          name: values.name,
+          description: values.description,
+        });
+        break;
+      case "addCodeValidation":
+        // await addCodeValidation(values);
+        break;
+      case "editCodeValidation":
+        // await updateCodeValidation(values);
+        break;
+      case "addAcademicLevel":
+        // await addAcademicLevel(values);
+        break;
+      case "editAcademicLevel":
+        // await updateAcademicLevel(values);
+        break;
     }
   };
 
-  const handleEdit = (category: Category) => {
+  const { data: categories, isPending: isPendingCategory } = useQuery({
+    queryKey: ["getAllCategories"],
+    queryFn: getAllCategories,
+  });
+
+  const { mutate: mutateDeleteCategory, isPending: isPendingDeleteCategory } =
+    useMutation({
+      mutationFn: (id: number) => deleteCategory(id),
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: ["getAllCategories"],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["getAllServices"],
+        });
+        notifications.show({
+          title: "Deletar categoria",
+          message: "Categoria deletada com sucesso",
+          color: "green",
+          position: "top-right",
+        });
+      },
+      onError: () => {
+        notifications.show({
+          title: "Deletar categoria",
+          message: "Erro ao deletar categoria",
+          color: "red",
+          position: "top-right",
+        });
+      },
+    });
+
+  const { mutate: mutateCreateCategory, isPending: isPendingCreateCategory } =
+    useMutation({
+      mutationFn: (values: ICreateCategory) => createCategory(values),
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: ["getAllCategories"],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["getAllServices"],
+        });
+
+        notifications.show({
+          title: "Criação de categoria",
+          message: "Categoria criada com sucesso",
+          color: "green",
+          position: "top-right",
+        });
+      },
+      onError: () => {
+        notifications.show({
+          title: "Criação de categoria",
+          message: "Erro ao criar categoria",
+          color: "red",
+          position: "top-right",
+        });
+      },
+    });
+
+  const onDeleteCategory = async () => {
+    mutateDeleteCategory(selectedCategory?.id as number);
+
+    if (!isPendingDeleteCategory) {
+      setIsDeleteCategoryModalOpen(false);
+    }
+  };
+
+  const handleDelete = async (category: ICategory) => {
+    console.log("category delete", id);
     setSelectedCategory(category);
-    setCategoryFormModalOpened(true);
+    setIsDeleteCategoryModalOpen(true);
+  };
+
+  const handleEdit = (category: ICategory) => {
+    setSelectedCategory(category);
+    setSelectedItem({
+      id: category.id,
+      name: category.name,
+      description: category.description,
+    });
+
+    console.log("category edit", category);
+    console.log("selectItem", selectedItem);
+
+    setCustomModalOpened({ type: "editCategory", status: true });
   };
 
   const handleAdd = () => {
-    setSelectedCategory(undefined);
-    setCategoryFormModalOpened(true);
+    console.log("category add");
+    console.log("modalOpened", modalOpened);
   };
 
-  const handleSubmitCategory = async (values: CategoryFormValues) => {
-    try {
-      // Handle file uploads for all services
-      const servicesWithUrls = await Promise.all(
-        values.services.map(async (service) => {
-          let photoUrl = undefined;
-          if (service.photo) {
-            const formData = new FormData();
-            formData.append("photo", service.photo);
-            // Add your photo upload API call here
-            // const uploadResult = await uploadPhoto(formData);
-            // photoUrl = uploadResult.url;
-          }
-          return { ...service, photoUrl };
-        })
-      );
+  const handleSubmitCategory = async (values: TCategoriaFormValues) => {
+    // Handle file uploads for all services
+    const servicesWithUrls = await Promise.all(
+      values.services.map(async (service) => {
+        let photo = undefined;
+        if (service.photo instanceof File) {
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve) => {
+            reader.onload = () => {
+              resolve(reader.result as string);
+            };
+          });
+          reader.readAsDataURL(service.photo);
+          photo = await base64Promise;
+        }
+        return { ...service, photo };
+      })
+    );
 
-      if (selectedCategory) {
-        // Update existing category
-        // Add your API call here
-        // await updateCategory({ ...values, id: selectedCategory.id, services: servicesWithUrls });
-
-        setCategories(
-          categories.map((category) =>
-            category.id === selectedCategory.id
-              ? { ...category, ...values, services: servicesWithUrls }
-              : category
-          )
-        );
-      } else {
-        // Add new category
-        // Add your API call here
-        // const newCategory = await createCategory({ ...values, services: servicesWithUrls });
-
-        setCategories([
-          ...categories,
-          {
-            ...values,
-            id: Date.now().toString(), // Replace with actual ID from API
-            services: servicesWithUrls,
-          },
-        ]);
-      }
-
-      notifications.show({
-        title: "Success",
-        message: `Category ${
-          selectedCategory ? "updated" : "added"
-        } successfully`,
-        color: "green",
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: `Failed to ${selectedCategory ? "update" : "add"} category`,
-        color: "red",
-      });
+    if (selectedCategory) {
+      // Update existing category
+      // Add your API call herej
+      // await updateCategory({ ...values, id: selectedCategory.id, services: servicesWithUrls });
+    } else {
+      console.log("create category");
+      // Add new category
+      // Add your API call here
+      // const newCategory = await createCategory({ ...values, services: servicesWithUrls });
+      mutateCreateCategory({ ...values, services: servicesWithUrls });
     }
   };
 
@@ -178,29 +263,28 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     queryFn: getAllServices,
   });
 
-  const { mutate: mutateDeleteService, isPending: isPendingDeleteService } =
-    useMutation({
-      mutationFn: (id: number) => deleteService(id),
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["getAllServices"],
-        });
-        notifications.show({
-          title: "Exclusão de serviço",
-          message: "Serviço excluído com sucesso!",
-          color: "green",
-          position: "top-right",
-        });
-      },
-      onError: (error) => {
-        notifications.show({
-          title: "Exclusão de serviço",
-          message: "Erro ao excluir serviço!",
-          color: "red",
-          position: "top-right",
-        });
-      },
-    });
+  const { mutate: mutateDeleteService } = useMutation({
+    mutationFn: (id: number) => deleteService(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["getAllServices"],
+      });
+      notifications.show({
+        title: "Exclusão de serviço",
+        message: "Serviço excluído com sucesso!",
+        color: "green",
+        position: "top-right",
+      });
+    },
+    onError: () => {
+      notifications.show({
+        title: "Exclusão de serviço",
+        message: "Erro ao excluir serviço!",
+        color: "red",
+        position: "top-right",
+      });
+    },
+  });
 
   const { mutate: mutateUpdateService, isPending: isPendingEditService } =
     useMutation({
@@ -216,7 +300,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
           position: "top-right",
         });
       },
-      onError: (error) => {
+      onError: () => {
         notifications.show({
           title: "Atualização de serviço",
           message: "Erro ao atualizar serviço!",
@@ -240,7 +324,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
           position: "top-right",
         });
       },
-      onError: (error) => {
+      onError: () => {
         notifications.show({
           title: "Criação de serviço",
           message: "Erro ao criar serviço!",
@@ -252,6 +336,11 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   const currentUser = JSON.parse(
     localStorage.getItem("userInfo") as string
   ) as ICurrentUser;
+
+  const handleSubmitEdit = async (
+    id: string,
+    values: { name: string; description: string }
+  ) => {};
 
   const heCan = currentUserCanManagerProfile({ id, role }, currentUser);
 
@@ -272,7 +361,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
         position: "top-right",
       });
     },
-    onError: (error) => {
+    onError: () => {
       console.log(error);
       notifications.show({
         title: "Atualização de perfil",
@@ -425,6 +514,31 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
         </Card>
       </div>
 
+      {/* <Group>
+        <Button onClick={() => handleOperation("editCategory")}>
+          Edit Category
+        </Button>
+
+        <Button onClick={() => handleOperation("addCodeValidation")}>
+          Add Code Validation
+        </Button>
+
+        <Button onClick={() => handleOperation("addAcademicLevel")}>
+          Add Academic Level
+        </Button>
+      </Group> */}
+
+      <CustomModal
+        opened={customModalOpened.status}
+        onClose={() => {
+          setCustomModalOpened({ type: "editCategory", status: false });
+          setSelectedItem(null);
+        }}
+        type={customModalOpened.type}
+        initialData={selectedItem || undefined}
+        onSubmit={handleSubmitCustomModal}
+      />
+
       <div className="w-4/5">
         <Card shadow="md" radius="md" p="xl">
           <Stack spacing="md">
@@ -532,31 +646,44 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
             onSubmit={handleSubmit}
           />
         </Card>
-        <div>
-          <Button
-            onClick={() =>
-              setModalOpened({ type: "openListOfCategories", status: true })
-            }
-          >
-            Manage Categories
-          </Button>
 
+        <EmployeesModal />
+
+        {categories && (
           <CategoriesModal
-            opened={categoriesModalOpened}
-            onClose={() => setCategoriesModalOpened(false)}
             categories={categories}
             onDelete={handleDelete}
+            isPending={isPendingCategory}
             onEdit={handleEdit}
             onAdd={handleAdd}
           />
+        )}
 
-          <CategoryFormModal
-            opened={categoryFormModalOpened}
-            onClose={() => setCategoryFormModalOpened(false)}
-            initialData={selectedCategory}
-            onSubmit={handleSubmitCategory}
-          />
-        </div>
+        <DeleteConfirmationModal
+          description="Deseja realmente excluir esta categoria?"
+          title="Excluir Categoria"
+          opened={isDeleteCategoryModalOpen}
+          setOpened={setIsDeleteCategoryModalOpen}
+          type="deleteCategory"
+          onConfirmDelete={onDeleteCategory}
+          isPending={isPendingDeleteCategory}
+        />
+
+        {/* <CustomModal
+          onSubmit={handleSubmitEdit}
+          type="editCategory"
+          initialData={{
+            id: "1",
+            name: "Cortes de Cabelo",
+            description: "Diversos tipos de cortes de cabelo",
+          }}
+        /> */}
+
+        <CategoryFormModal
+          initialData={selectedCategory as ICategory}
+          onSubmit={handleSubmitCategory}
+          isLoading={isPendingCreateCategory}
+        />
       </div>
     </div>
   );

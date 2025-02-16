@@ -187,7 +187,10 @@ export default function ServiceCard({
             {description}
           </Text>
         </div>
-        <Badge variant="outline">{category.description}</Badge>
+        <div className="flex items-center gap-2 w-full">
+          <Badge variant="outline">{category.name}</Badge>
+          <Badge variant="outline">{category.description}</Badge>
+        </div>
       </Group>
 
       <Card.Section className={classes.section} mt="md">

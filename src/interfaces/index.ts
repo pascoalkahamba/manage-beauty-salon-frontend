@@ -1,4 +1,4 @@
-import { TOpenModal, TRole, TStatus } from "@/@types";
+import { TCustomModal, TOpenModal, TRole, TStatus } from "@/@types";
 
 export interface ICreateAccount {
   username: string;
@@ -60,6 +60,18 @@ export interface IUpdateUserProfile {
   password: string;
 }
 
+export interface ICreateCategory {
+  name: string;
+  description: string;
+  services: Omit<IServiceToCreate, "categoryId">[];
+}
+
+export interface IUpdateCategory {
+  id: number;
+  name: string;
+  description: string;
+}
+
 export interface IGetOneUser {
   id: number;
   role: TRole;
@@ -67,6 +79,10 @@ export interface IGetOneUser {
 
 export interface IModalAtom {
   type: TOpenModal;
+  status: boolean;
+}
+export interface ICustomModalAtom {
+  type: TCustomModal;
   status: boolean;
 }
 

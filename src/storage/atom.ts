@@ -1,4 +1,4 @@
-import { IModalAtom, IService } from "@/interfaces";
+import { ICustomModalAtom, IModalAtom, IService } from "@/interfaces";
 import { atom } from "jotai";
 
 const modalAtom = atom<IModalAtom>({
@@ -6,6 +6,11 @@ const modalAtom = atom<IModalAtom>({
   status: false,
 });
 
+const customModalAtom = atom<ICustomModalAtom>({
+  type: "editCategory",
+  status: false,
+});
+
 const currentServiceAtom = atom<IService | null>(null);
 
-export { modalAtom, currentServiceAtom };
+export { modalAtom, currentServiceAtom, customModalAtom };

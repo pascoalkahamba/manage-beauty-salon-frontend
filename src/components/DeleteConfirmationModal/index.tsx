@@ -37,7 +37,14 @@ export default function DeleteConfirmationModal({
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title={title} centered size="sm">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={title}
+      centered
+      size="sm"
+      style={{ zIndex: 9999 }}
+    >
       <Stack spacing="md">
         <Text>{description}</Text>
 
@@ -56,7 +63,7 @@ export default function DeleteConfirmationModal({
           Atenção: Esta ação não pode ser desfeita.
         </Text>
 
-        <Group position="right" mt="md">
+        <Group position="right" mt="md" justify="end">
           <Button variant="subtle" onClick={onClose} disabled={isPending}>
             Cancelar
           </Button>
