@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Modal, Table, ActionIcon, Text, Center } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import Link from "next/link";
-import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { useAtom } from "jotai";
 import { modalAtom } from "@/storage/atom";
-import { useQuery } from "@tanstack/react-query";
-import { getAllEmployees } from "@/servers";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteUserAccount, getAllEmployees } from "@/servers";
 import { IEmployee } from "@/interfaces";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import { TRole } from "@/@types";
 
 // Types
 
@@ -16,6 +17,33 @@ import { IEmployee } from "@/interfaces";
 export default function EmployeesModal() {
   // Mock data - replace with your actual data fetching logic
   const [opened, setOpened] = useAtom(modalAtom);
+  const queryClient = useQueryClient();
+
+  const { mutate: mutateDeleteAccount, isPending: isPendingDeleteAccount } =
+    useMutation({
+      mutationFn: ({ id, role }: { id: number; role: TRole }) =>
+        deleteUserAccount(id, role),
+
+      onSuccess: () => {
+        notifications.show({
+          title: "Eliminação conta do funcionário",
+          message: "Conta eliminada com sucesso!",
+          color: "green",
+          position: "top-right",
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["employees"],
+        });
+      },
+      onError: () => {
+        notifications.show({
+          title: "Eliminação conta do funcionário",
+          message: "Erro ao eliminar conta!",
+          color: "red",
+          position: "top-right",
+        });
+      },
+    });
 
   const {
     data: employees,
@@ -29,19 +57,24 @@ export default function EmployeesModal() {
     setOpened({ status: false, type: "listOfEmployees" });
   };
   // Delete confirmation modal
-  const [
-    deleteModalOpened,
-    { open: openDeleteModal, close: closeDeleteModal },
-  ] = useDisclosure(false);
+  const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState<IEmployee | null>(
     null
   );
 
   // Handle delete employee
-  const handleDeleteClick = (employee: IEmployee) => {
-    setEmployeeToDelete(employee);
-    openDeleteModal();
+  const onDeleteEmployee = async () => {
+    mutateDeleteAccount({
+      id: employeeToDelete?.id as number,
+      role: employeeToDelete?.role as TRole,
+    });
+    setDeleteModalOpened(false);
   };
+  function handleEmployeeClick(employee: IEmployee) {
+    console.log("employee", employee);
+    setDeleteModalOpened(true);
+    setEmployeeToDelete(employee);
+  }
 
   if (isPending) {
     return (
@@ -108,7 +141,7 @@ export default function EmployeesModal() {
                 <ActionIcon
                   variant="subtle"
                   color="red"
-                  onClick={() => handleDeleteClick(employee)}
+                  onClick={() => handleEmployeeClick(employee)}
                 >
                   <IconTrash size={16} />
                 </ActionIcon>
@@ -117,6 +150,16 @@ export default function EmployeesModal() {
           ))}
         </Table.Tbody>
       </Table>
+
+      <DeleteConfirmationModal
+        description="Você tem certeza que deseja excluir este funcionário?"
+        title="Excluir Funcionário"
+        opened={deleteModalOpened}
+        setOpened={setDeleteModalOpened}
+        type="deleteCategory"
+        onConfirmDelete={onDeleteEmployee}
+        isPending={isPendingDeleteAccount}
+      />
     </Modal>
   );
 }
