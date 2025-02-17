@@ -51,12 +51,9 @@ const UPDATEACADEMICLEVELROUTE = "/academicLevel/updateAcademicLevel";
 const DELETEACADEMICLEVELROUTE = "/academicLevel/deleteAcademicLevel";
 
 // code to create employee
-const CREATECODETOEMPLOYEEROUTE =
-  "/codeValidationToEmployee/createCodeToEmployee";
-const UPDATECODETOEMPLOYEEROUTE =
-  "/codeValidationToEmployee/updateCodeToEmployee";
-const DELETECODETOEMPLOYEEROUTE =
-  "/codeValidationToEmployee/deleteCodeToEmployee";
+const CREATECODETOEMPLOYEEROUTE = "/codeValidationToEmployee/create";
+const UPDATECODETOEMPLOYEEROUTE = "/codeValidationToEmployee/update";
+const DELETECODETOEMPLOYEEROUTE = "/codeValidationToEmployee/delete";
 const GETALLCODESTOEMPLOYEEROUTE =
   "/codeValidationToEmployee/getAllCodeValidationToEmployees";
 

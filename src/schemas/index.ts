@@ -107,6 +107,24 @@ const profileSchema = zod.object({
   photoUrl: zod.string().optional(), // File upload is optional
 });
 
+const academicLevelSchema = zod.object({
+  name: zod.string().min(6, "Nome deve ter pelo menos 6 caracteres"),
+  description: zod
+    .string()
+    .min(10, "Descrição deve ter pelo menos 10 caracteres"),
+});
+const codeValidationToEmployeeSchema = zod.object({
+  name: zod
+    .string()
+    .regex(
+      EMPLOYEE_CODE_REGEX,
+      "codigo inválido, deve conter 8 digitos um numero e uma letra e um caracter especial (@$!%*#?&)."
+    ),
+  description: zod
+    .string()
+    .min(10, "Descrição deve ter pelo menos 10 caracteres"),
+});
+
 const AppointmentSchema = zod.object({
   id: zod.string(),
   clientName: zod.string().min(1, "Client name is required"),
@@ -142,6 +160,8 @@ export {
   createAccountSchema,
   loginSchema,
   bookingSchema,
+  academicLevelSchema,
+  codeValidationToEmployeeSchema,
   AppointmentSchema,
   serviceSchema,
   updateCategorySchema,
