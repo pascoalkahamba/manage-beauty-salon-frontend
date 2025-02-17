@@ -172,7 +172,7 @@ function ServiceForm({
           />
         </Group>
 
-        <Group position="right">
+        <Group justify="end">
           <Button variant="subtle" onClick={onCancel} disabled={loading}>
             Cancelar
           </Button>

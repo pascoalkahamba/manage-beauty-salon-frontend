@@ -9,14 +9,7 @@ import classes from "@/components/Footer/styles.module.css";
 import { useQuery } from "@tanstack/react-query";
 import { getAllCategories } from "@/servers";
 import { ICurrentUser } from "@/interfaces";
-
-const links = [
-  { link: "#", label: "Contact" },
-  { link: "#", label: "Privacy" },
-  { link: "#", label: "Blog" },
-  { link: "#", label: "Store" },
-  { link: "#", label: "Careers" },
-];
+import ActionToggle from "@/components/ActionToggle";
 
 export default function Footer() {
   const currentUser = JSON.parse(
@@ -47,6 +40,9 @@ export default function Footer() {
         <Group className={classes.links}>{items}</Group>
 
         <Group gap="xs" justify="flex-end" wrap="nowrap">
+          <ActionIcon size="lg" variant="default" radius="xl">
+            <ActionToggle />
+          </ActionIcon>
           <ActionIcon size="lg" variant="default" radius="xl">
             <IconBrandTwitter size={18} stroke={1.5} />
           </ActionIcon>
