@@ -4,11 +4,14 @@ import {
   IAppointmentStatusResponse,
   ICart,
   ICategory,
+  ICodeValidationToEmployee,
   ICreateAccount,
   ICreateAccountResponse,
+  ICreateAdemicLevel,
   ICreateAppointment,
   ICreateCart,
   ICreateCategory,
+  ICreateCodeValidationToEmployee,
   IEmployee,
   ILogin,
   ILoginResponse,
@@ -25,22 +28,27 @@ import {
 } from "@/interfaces";
 import axiosApp from "@/axios";
 import {
+  CREATEACADEMICLEVEL,
   CREATEACCOUNTCLIENTROUTE,
   CREATEACCOUNTEMPLOYEEROUTE,
   CREATEAPPOINTMENTROUTE,
   CREATECARTROUTE,
   CREATECATEGORYROUTE,
+  CREATECODETOEMPLOYEEROUTE,
   CREATESERVICEROUTE,
+  DELETEACADEMICLEVELROUTE,
   DELETEAPPOINTMENTROUTE,
   DELETECARTROUTE,
   DELETECATEGORYROUTE,
   DELETECLIENTROUTE,
+  DELETECODETOEMPLOYEEROUTE,
   DELETEEMPLOYEEROUTE,
   DELETESERVICEROUTE,
   GETALLACADEMICLEVELSROUTE,
   GETALLAPPOINTMENTSROUTE,
   GETALLCARTSROUTE,
   GETALLCATEGORIESROUTE,
+  GETALLCODESTOEMPLOYEEROUTE,
   GETALLEMPLOYEESROUTE,
   GETALLSERVICESROUTE,
   GETAPPOINTMENTBYIDROUTE,
@@ -51,10 +59,12 @@ import {
   GETSERVICEBYIDROUTE,
   SIGNINCLIENTROUTE,
   SIGNINEMPLOYEEROUTE,
+  UPDATEACADEMICLEVELROUTE,
   UPDATEAPPOINTMENTROUTE,
   UPDATECARTROUTE,
   UPDATECATEGORYROUTE,
   UPDATECLIENTROUTE,
+  UPDATECODETOEMPLOYEEROUTE,
   UPDATEEMPLOYEEROUTE,
   UPDATESERVICEROUTE,
   UPDATESTATUSAPPOINTMENTROUTE,
@@ -186,6 +196,64 @@ export async function getAllAcademicLevels() {
   return academicLevels as unknown as IAcademicLevel[];
 }
 
+export async function createAcademicLevel(academicLevel: ICreateAdemicLevel) {
+  const response = await axiosApp.post(CREATEACADEMICLEVEL, academicLevel);
+  const academicLevelCreated = response.data;
+  return academicLevelCreated as unknown as IAcademicLevel;
+}
+
+export async function updateAcademicLevel(academicLevel: IAcademicLevel) {
+  const response = await axiosApp.post(
+    `${UPDATEACADEMICLEVELROUTE}/${academicLevel.id}`,
+    academicLevel
+  );
+  const academicLevelUpdated = response.data;
+  return academicLevelUpdated as unknown as IAcademicLevel;
+}
+
+export async function deleteAcademicLevel(academicLevelId: number) {
+  const response = await axiosApp.delete(
+    `${DELETEACADEMICLEVELROUTE}/${academicLevelId}`
+  );
+  const academicLevelDeleted = response.data;
+  return academicLevelDeleted as unknown as IAcademicLevel;
+}
+
+export async function getAllCodeValidationToCreateEmployee() {
+  const response = await axiosApp.get(GETALLCODESTOEMPLOYEEROUTE);
+  const codeValidations = response.data;
+  return codeValidations as unknown as ICodeValidationToEmployee[];
+}
+
+export async function createCodeValidationToEmployee(
+  codeValidation: ICreateCodeValidationToEmployee
+) {
+  const response = await axiosApp.post(
+    CREATECODETOEMPLOYEEROUTE,
+    codeValidation
+  );
+  const codeValidationCreated = response.data;
+  return codeValidationCreated as unknown as ICodeValidationToEmployee;
+}
+
+export async function updateCodeValidationToEmployee(
+  codeValidation: ICodeValidationToEmployee
+) {
+  const response = await axiosApp.post(
+    `${UPDATECODETOEMPLOYEEROUTE}/${codeValidation.id}`,
+    codeValidation
+  );
+  const codeValidationUpdated = response.data;
+  return codeValidationUpdated as unknown as ICodeValidationToEmployee;
+}
+
+export async function deleteCodeValidationToEmployee(codeValidationId: number) {
+  const response = await axiosApp.delete(
+    `${DELETECODETOEMPLOYEEROUTE}/${codeValidationId}`
+  );
+  const codeValidationDeleted = response.data;
+  return codeValidationDeleted as unknown as ICodeValidationToEmployee;
+}
 export async function getAllEmployees() {
   const response = await axiosApp.get(GETALLEMPLOYEESROUTE);
   const employees = response.data;

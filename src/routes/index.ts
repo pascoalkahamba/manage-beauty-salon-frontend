@@ -46,12 +46,32 @@ const GETCARTBYCLIENTIDROUTE = "/cart/getCartByClientId";
 
 // academic level routes
 const GETALLACADEMICLEVELSROUTE = "/academicLevel/getAllAcademicLevels";
+const CREATEACADEMICLEVEL = "/academicLevel/create";
+const UPDATEACADEMICLEVELROUTE = "/academicLevel/updateAcademicLevel";
+const DELETEACADEMICLEVELROUTE = "/academicLevel/deleteAcademicLevel";
+
+// code to create employee
+const CREATECODETOEMPLOYEEROUTE =
+  "/codeValidationToEmployee/createCodeToEmployee";
+const UPDATECODETOEMPLOYEEROUTE =
+  "/codeValidationToEmployee/updateCodeToEmployee";
+const DELETECODETOEMPLOYEEROUTE =
+  "/codeValidationToEmployee/deleteCodeToEmployee";
+const GETALLCODESTOEMPLOYEEROUTE =
+  "/codeValidationToEmployee/getAllCodeValidationToEmployees";
 
 export {
   CREATEACCOUNTEMPLOYEEROUTE,
   CREATEACCOUNTCLIENTROUTE,
   SIGNINEMPLOYEEROUTE,
+  CREATECODETOEMPLOYEEROUTE,
+  UPDATECODETOEMPLOYEEROUTE,
+  DELETECODETOEMPLOYEEROUTE,
+  GETALLCODESTOEMPLOYEEROUTE,
   SIGNINCLIENTROUTE,
+  CREATEACADEMICLEVEL,
+  UPDATEACADEMICLEVELROUTE,
+  DELETEACADEMICLEVELROUTE,
   GETALLEMPLOYEESROUTE,
   GETEMPLOYEEBYIDROUTE,
   GETALLCLIENTSROUTE,

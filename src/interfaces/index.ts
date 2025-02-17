@@ -46,6 +46,22 @@ export interface IAcademicLevel {
   description: string;
 }
 
+export interface ICreateAdemicLevel {
+  name: string;
+  description: string;
+}
+
+export interface ICreateCodeValidationToEmployee {
+  characters: string;
+  description: string;
+}
+
+export interface ICodeValidationToEmployee {
+  id: number;
+  characters: string;
+  description: string;
+}
+
 export interface IUpdateUserProfile {
   username: string;
   email: string;

@@ -52,6 +52,7 @@ import MenuInfo from "../MenuInfo";
 import DeleteConfirmationModal from "../DeleteConfirmationModal";
 import CustomModal from "@/components/CustomModal";
 import EmployeesModal from "../EmployeesModal";
+import AcademicLevelAndCodeToCreateEmployeeModal from "@/components/AcademicLevelAndCodeToCreateEmployeeModal";
 
 interface UserProfilePageProps {
   id: number;
@@ -668,6 +669,8 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
           onConfirmDelete={onDeleteCategory}
           isPending={isPendingDeleteCategory}
         />
+
+        <AcademicLevelAndCodeToCreateEmployeeModal />
 
         {/* <CustomModal
           onSubmit={handleSubmitEdit}

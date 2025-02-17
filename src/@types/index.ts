@@ -44,6 +44,8 @@ export type TOpenModal =
   | "openModalServices"
   | "none"
   | "deleteAppointment"
+  | "listOfAcademicLevel"
+  | "listOfCodeToCreateEmployee"
   | "deleteAccount"
   | "openListOfCategories"
   | "addNewCategory"

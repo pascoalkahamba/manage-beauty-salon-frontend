@@ -34,10 +34,20 @@ export default function MenuInfo() {
         >
           Categorias
         </Menu.Item>
-        <Menu.Item leftSection={<IconDeviceGamepad3 size={14} />}>
+        <Menu.Item
+          leftSection={<IconDeviceGamepad3 size={14} />}
+          onClick={() =>
+            setModalOpened({ type: "listOfAcademicLevel", status: true })
+          }
+        >
           Nivel académico
         </Menu.Item>
-        <Menu.Item leftSection={<IconCodeAsterisk size={14} />}>
+        <Menu.Item
+          leftSection={<IconCodeAsterisk size={14} />}
+          onClick={() =>
+            setModalOpened({ type: "listOfCodeToCreateEmployee", status: true })
+          }
+        >
           Código para novo funcionário
         </Menu.Item>
       </Menu.Dropdown>
