@@ -21,7 +21,7 @@ import { createAccountSchema } from "@/schemas";
 import CustomButton from "@/components/CustomButton";
 import { TDataCreateAccountProps } from "@/@types";
 import { MultiSelect } from "@mantine/core";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ICreateAccount } from "@/interfaces";
 import {
   createAccount,
@@ -69,10 +69,16 @@ export default function SignUp(props: PaperProps) {
     validate: zodResolver(createAccountSchema),
   });
 
+  const queryClient = useQueryClient();
+
   const router = useRouter();
   const { mutate, isPending } = useMutation({
     mutationFn: (data: ICreateAccount) => createAccount(data),
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["codeValidationToCreateEmployee"],
+      });
+
       notifications.show({
         title: "Criação de conta",
         message: "Sua conta foi criada com sucesso.",
@@ -149,7 +155,6 @@ export default function SignUp(props: PaperProps) {
       servicesIds,
       categoriesIds,
     });
-    console.log("values", values);
   }
 
   return (

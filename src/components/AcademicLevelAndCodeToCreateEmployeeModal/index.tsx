@@ -93,9 +93,7 @@ export default function AcademicLevelAndCodeToCreateEmployeeModal() {
       createCodeValidationToEmployee(values),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          `${currentUser.role}-${currentUser.id}-codeValidationToCreateEmployee`,
-        ],
+        queryKey: ["codeValidationToCreateEmployee"],
       });
       notifications.show({
         title: "Novo código de validação",
@@ -148,9 +146,7 @@ export default function AcademicLevelAndCodeToCreateEmployeeModal() {
       updateCodeValidationToEmployee(values),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          `${currentUser.role}-${currentUser.id}-codeValidationToCreateEmployee`,
-        ],
+        queryKey: ["codeValidationToCreateEmployee"],
       });
       notifications.show({
         title: "Atualização de código de validação",
@@ -196,9 +192,7 @@ export default function AcademicLevelAndCodeToCreateEmployeeModal() {
     mutationFn: (id: number) => deleteCodeValidationToEmployee(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          `${currentUser.role}-${currentUser.id}-codeValidationToCreateEmployee`,
-        ],
+        queryKey: ["codeValidationToCreateEmployee"],
       });
       notifications.show({
         title: "Exclusão de código de validação",
@@ -218,9 +212,7 @@ export default function AcademicLevelAndCodeToCreateEmployeeModal() {
   });
 
   const { data: codeValidationToCreateEmployee } = useQuery({
-    queryKey: [
-      `${currentUser.role}-${currentUser.id}-codeValidationToCreateEmployee`,
-    ],
+    queryKey: ["codeValidationToCreateEmployee"],
     queryFn: getAllCodeValidationToCreateEmployee,
   });
 
