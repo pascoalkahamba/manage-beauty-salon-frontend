@@ -17,7 +17,7 @@ export default function SignInPage() {
       >
         <div className="w-[70%] rounded-2xl">
           <Image
-            src="/images/beauty-salon-sign.jpg"
+            src="/images/signIn.jpeg"
             width={2000}
             height={2000}
             alt="create account picture"

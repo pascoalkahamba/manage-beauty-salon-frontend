@@ -22,7 +22,7 @@ export default function CreatedAccount() {
       >
         <div className="w-[70%] rounded-2xl">
           <Image
-            src="/images/beauty-salon-createAccount.jpg"
+            src="/images/signUp.jpeg"
             width={2000}
             height={2000}
             alt="create account picture"

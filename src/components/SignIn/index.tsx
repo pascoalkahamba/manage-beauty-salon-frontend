@@ -60,8 +60,8 @@ export default function SignIn(props: PaperProps) {
 
   const handleSubmit = (values: TDataLoginProps) => {
     const admin =
-      values.email === "pascoalkahamba25@gmail.com" ||
-      values.email === "PascoalKahamba25@gmail.com";
+      values.email === "judithjustina999@gmail.com" ||
+      values.email === "pascoalkahamba25@gmail.com";
 
     mutate({
       email: values.email,
