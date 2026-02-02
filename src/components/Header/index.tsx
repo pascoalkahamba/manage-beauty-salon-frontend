@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   IconChevronDown,
   IconDeviceAnalytics,
@@ -38,16 +38,28 @@ export default function Header() {
   const router = useRouter();
   const [userMenuOpened, setUserMenuOpened] = useState(false);
   const [openDeleteAccountModal, setOpenDeleteAccountModal] = useState(false);
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
+
   const { data: user } = useQuery({
-    queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
-    queryFn: () => getUserById(currentUser.id, currentUser.role),
+    queryKey: currentUser
+      ? [`${currentUser.role}-${currentUser.id}-getOneUser`]
+      : ["guest-user"],
+    queryFn: () => getUserById(currentUser!.id, currentUser!.role),
+    enabled: !!currentUser,
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: () => deleteUserAccount(currentUser.id, currentUser.role),
+    mutationFn: () => {
+      if (!currentUser) return Promise.reject(new Error("No user"));
+      return deleteUserAccount(currentUser.id, currentUser.role);
+    },
     onSuccess: () => {
       notifications.show({
         title: "Eliminação de conta",
@@ -170,9 +182,13 @@ export default function Header() {
                 <Menu.Item
                   leftSection={<IconSettings size={16} stroke={1.5} />}
                 >
-                  <Link href={`/profile/${currentUser.id}/${currentUser.role}`}>
-                    Definições da conta
-                  </Link>
+                  {currentUser && (
+                    <Link
+                      href={`/profile/${currentUser.id}/${currentUser.role}`}
+                    >
+                      Definições da conta
+                    </Link>
+                  )}
                 </Menu.Item>
                 <Menu.Item
                   onClick={logout}

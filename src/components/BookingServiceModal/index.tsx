@@ -1,4 +1,3 @@
-// schema.ts
 "use client";
 // BookingModal.tsx
 import { useForm, zodResolver } from "@mantine/form";
@@ -16,6 +15,7 @@ import {
   Divider,
 } from "@mantine/core";
 import { DatePickerInput, TimeInput } from "@mantine/dates";
+import "dayjs/locale/pt-br";
 import { notifications } from "@mantine/notifications";
 import { IconClock, IconCurrency, IconCategory } from "@tabler/icons-react";
 import { BookingFormValues } from "@/@types";
@@ -44,7 +44,7 @@ export function BookingModal({
 }: BookingModalProps) {
   const form = useForm<BookingFormValues>({
     initialValues: {
-      employeeId: "0",
+      employeeId: "",
       date: new Date(),
       hour: "",
     },
@@ -70,7 +70,7 @@ export function BookingModal({
   const isTimeSlotAvailable = (
     employeeId: number,
     date: Date,
-    hour: string
+    hour: string,
   ) => {
     const employee = service.employees.find((emp) => emp.id === employeeId);
     return !employee?.availability?.includes(hour) || false;
@@ -145,10 +145,11 @@ export function BookingModal({
       }
       onClose={onClose}
       size="xl"
+      closeOnClickOutside={false}
       title={<Title order={2}>{service.name}</Title>}
       overlayProps={{
         color: "#1a1a1e4f",
-        opacity: 0.7,
+        opacity: 0.3,
         blur: 2,
       }}
     >
@@ -209,8 +210,7 @@ export function BookingModal({
                   label="Data"
                   placeholder="Selecione a data"
                   error={form.errors.date}
-                  minDate={new Date()}
-                  locale="pt-BR"
+                  locale="pt-br"
                   {...form.getInputProps("date")}
                 />
 

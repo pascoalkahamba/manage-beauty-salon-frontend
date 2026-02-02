@@ -57,7 +57,7 @@ function ServiceForm({
   loading,
 }: ServiceFormProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    initialValues?.photoUrl || null
+    initialValues?.photoUrl || null,
   );
 
   const { data: categoryData, isError: categoryIsError } = useQuery({
@@ -185,8 +185,6 @@ function ServiceForm({
   );
 }
 
-// ServicesManagementModal.tsx
-
 interface ServicesManagementModalProps {
   onClose: () => void;
   services: IService[];
@@ -220,7 +218,7 @@ export default function ServicesManagementModal({
   const filteredServices = services.filter(
     (service) =>
       service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.category.name.toLowerCase().includes(searchQuery.toLowerCase())
+      service.category.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleAdd = async (values: TCreateService) => {

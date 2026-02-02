@@ -8,22 +8,42 @@ import SkeletonComponent from "@/components/Skeleton";
 import ServiceCardCarousel from "@/components/ServiceCardCarousel";
 import classes from "@/components/CardsCarousel/styles.module.css";
 import { ICurrentUser } from "@/interfaces";
+import { useEffect, useState } from "react";
 
 export default function CardsCarousel() {
   const theme = useMantineTheme();
   const mobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
 
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
+
   const {
     data: allServices,
     isPending,
     error,
   } = useQuery({
-    queryKey: [`${currentUser.id}-${currentUser.role}-allServices`],
+    queryKey: currentUser
+      ? [`${currentUser.id}-${currentUser.role}-allServices`]
+      : ["guest-allServices"],
     queryFn: getAllServices,
+    enabled: !!currentUser,
   });
+
+  if (!currentUser) {
+    return (
+      <SkeletonComponent
+        isPending={true}
+        skeletons={[3, 2]}
+        width={200}
+        height={300}
+      />
+    );
+  }
 
   if (isPending)
     return (
@@ -77,7 +97,7 @@ export default function CardsCarousel() {
             image={picture}
           />
         </Carousel.Slide>
-      )
+      ),
     );
 
   return (

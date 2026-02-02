@@ -1,7 +1,7 @@
 // types.ts
 "use client";
 // EmployeeAppointmentsModal.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Modal,
   Button,
@@ -48,17 +48,24 @@ export default function EmployeeAppointmentsModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [canEdit, setCanEdit] = useState(false);
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
 
   const { mutate: mutateDeleteAppointment, isPending: isPendingAppointment } =
     useMutation({
       mutationFn: (appointmentId: number) => deleteAppointment(appointmentId),
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
-        });
+        if (currentUser) {
+          queryClient.invalidateQueries({
+            queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
+          });
+        }
         notifications.show({
           title: "Agendamento deletado",
           message: "Agendamento deletado com sucesso!",
@@ -80,9 +87,11 @@ export default function EmployeeAppointmentsModal({
     mutationFn: (appointment: IUpdateAppointment) =>
       updateAppointment(appointment),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
-      });
+      if (currentUser) {
+        queryClient.invalidateQueries({
+          queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
+        });
+      }
       notifications.show({
         title: "Atualização de agendamento",
         message: "Agendamento atualizado com sucesso!",
@@ -121,12 +130,14 @@ export default function EmployeeAppointmentsModal({
   };
 
   const onConfirmDelete = async () => {
-    mutateDeleteAppointment(selectedAppointment?.id as number);
+    if (selectedAppointment?.id) {
+      mutateDeleteAppointment(selectedAppointment.id);
+    }
     setOpenDeleteAppointment(false);
   };
 
   function editAppointment(item: IDataForCreateAppointment) {
-    if (currentUser.role !== "CLIENT") {
+    if (!currentUser || currentUser.role !== "CLIENT") {
       notifications.show({
         title: "Acesso negado",
         message:
@@ -145,7 +156,7 @@ export default function EmployeeAppointmentsModal({
     });
   }
 
-  const searchName = currentUser.role === "EMPLOYEE" ? "client" : "employee";
+  const searchName = currentUser?.role === "EMPLOYEE" ? "client" : "employee";
 
   function handleEdit(appointment: IAppointment) {
     if (appointment?.status !== "PENDING") {
@@ -200,6 +211,10 @@ export default function EmployeeAppointmentsModal({
     return new Date(date).toLocaleDateString() + " " + time;
   };
 
+  if (!currentUser) {
+    return null;
+  }
+
   return (
     <>
       <Modal
@@ -225,7 +240,7 @@ export default function EmployeeAppointmentsModal({
           </Group>
 
           {filteredAppointments.length === 0 ? (
-            <Text color="dimmed" align="center" py="xl">
+            <Text c="dimmed" ta="center" py="xl">
               Nenhum agendamento encontrado.
             </Text>
           ) : (
@@ -264,7 +279,7 @@ export default function EmployeeAppointmentsModal({
                     </td>
                     <td>
                       <Text size="sm">{appointment.service.name}</Text>
-                      <Text size="xs" color="dimmed">
+                      <Text size="xs" c="dimmed">
                         {convertMinutes(appointment.service.duration)} •{" "}
                         {formatCurrency(appointment.service.price)}
                       </Text>

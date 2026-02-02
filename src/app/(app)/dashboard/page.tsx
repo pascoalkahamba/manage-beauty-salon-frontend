@@ -1,5 +1,11 @@
 import CardsCarousel from "@/components/CardsCarousel";
 import DashboardChild from "@/components/DashboardChild";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Salão de Beleza | Pagina Inicial",
+  description: "Page to user creates your account on the website.",
+};
 
 export default function Dashboard() {
   return (

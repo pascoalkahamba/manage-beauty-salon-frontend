@@ -127,7 +127,7 @@ export default function SignUp(props: PaperProps) {
   if (serviceIsError || categoryIsError || academicLevelIsError) {
     return (
       <p className="p-3 font-bold text-center">
-        Algo deu errado tente novamente:
+        Algo deu errado tente novamente mais tarde.
       </p>
     );
   }

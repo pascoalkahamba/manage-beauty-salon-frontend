@@ -31,7 +31,7 @@ import EmployeeAppointmentsModal from "@/components/EmployeeAppointmentsModal";
 import EditProfileModal from "@/components/EditProfileModal";
 import { useAtom } from "jotai";
 import { customModalAtom, modalAtom } from "@/storage/atom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CategoriesModal,
   CategoryFormModal,
@@ -64,8 +64,16 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] =
     useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ICategory | null>(
-    null
+    null,
   );
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
 
   const { mutate: mutateUpdateCategory, isPendingUpdateCategory } = useMutation(
     {
@@ -89,7 +97,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
           position: "top-right",
         });
       },
-    }
+    },
   );
 
   const [customModalOpened, setCustomModalOpened] = useAtom(customModalAtom);
@@ -242,7 +250,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
           photo = await base64Promise;
         }
         return { ...service, photo };
-      })
+      }),
     );
 
     if (selectedCategory) {
@@ -334,16 +342,15 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
         });
       },
     });
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
 
-  const handleSubmitEdit = async (
-    id: string,
-    values: { name: string; description: string }
-  ) => {};
+  // const handleSubmitEdit = async (
+  //   id: string,
+  //   values: { name: string; description: string },
+  // ) => {};
 
-  const heCan = currentUserCanManagerProfile({ id, role }, currentUser);
+  const heCan = currentUser
+    ? currentUserCanManagerProfile({ id, role }, currentUser)
+    : false;
 
   const { mutate, isPending: isPendingProfile } = useMutation({
     mutationFn: (values: IUpdateUserProfile) => updateUserProfile(values),
@@ -479,7 +486,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
   };
 
   const availability = user.appointments.some(
-    (appointment) => appointment.status === "CONFIRMED"
+    (appointment) => appointment.status === "CONFIRMED",
   );
 
   const openListOfAppointments = () => {
@@ -504,7 +511,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
     >
       <div className="w-3/4">
         <Card shadow="md" radius="md" p="md">
-          <Stack align="center" spacing="md">
+          <Stack align="center" gap="md">
             <Avatar src={user?.profile.photo.url} size={100} radius="xl" />
             <Title order={2}>{user?.username}</Title>
             <Text>{user?.email}</Text>
@@ -542,7 +549,7 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
 
       <div className="w-4/5">
         <Card shadow="md" radius="md" p="xl">
-          <Stack spacing="md">
+          <Stack gap="md">
             <Title order={2}>Informações</Title>
             <Divider />
             {role !== "CLIENT" && (
@@ -604,12 +611,12 @@ export default function UserProfilePage({ id, role }: UserProfilePageProps) {
                   Editar
                 </Button>
               )}
-              {currentUser.role !== "CLIENT" && availability ? (
-                <Button variant="light" color="red" fullWidth={!heCan}>
+              {currentUser?.role !== "CLIENT" && availability ? (
+                <Button variant="light" color="red" fullW={!heCan}>
                   Ocupado
                 </Button>
               ) : (
-                <Button variant="light" color="green" fullWidth={!heCan}>
+                <Button variant="light" color="green" fullW={!heCan}>
                   {role !== "CLIENT" ? "Disponível" : "Activo"}
                 </Button>
               )}

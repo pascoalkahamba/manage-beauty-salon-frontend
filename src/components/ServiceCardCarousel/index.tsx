@@ -19,6 +19,7 @@ import { notifications } from "@mantine/notifications";
 import { creatAppointment, createCart } from "@/servers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
+import { useEffect, useState } from "react";
 
 interface ServiceCardProps {
   description: string;
@@ -46,9 +47,15 @@ export default function ServiceCardCarouusel({
   const { convertMinutes } = useTimeConverter();
   const formatCurrency = useFormatCurrency(price);
   const queryClient = useQueryClient();
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
+
   const service: IService = {
     name,
     description,
@@ -56,7 +63,7 @@ export default function ServiceCardCarouusel({
     picture: image,
     duration,
     category,
-    categoryId: category.id,
+    categoryId: String(category.id),
     id: serviceId,
     employees,
   };
@@ -70,9 +77,11 @@ export default function ServiceCardCarouusel({
         color: "green",
         position: "top-right",
       });
-      queryClient.invalidateQueries({
-        queryKey: [`${currentUser.id}-${currentUser.role}-getOneUser`],
-      });
+      if (currentUser) {
+        queryClient.invalidateQueries({
+          queryKey: [`${currentUser.id}-${currentUser.role}-getOneUser`],
+        });
+      }
     },
     onError: () => {
       notifications.show({
@@ -112,17 +121,19 @@ export default function ServiceCardCarouusel({
   const handleAddToCart = async (item: IDataForCreateAppointment) => {
     await handleBookNow(item);
 
-    mutateCreateCart({
-      clientId: currentUser.id,
-      appointmentId: appointmentData?.id as number,
-    });
+    if (currentUser && appointmentData) {
+      mutateCreateCart({
+        clientId: currentUser.id,
+        appointmentId: appointmentData.id,
+      });
+    }
   };
 
   const setModal = useSetAtom(modalAtom);
   const [currentService, setCurrentService] = useAtom(currentServiceAtom);
 
   const handleBookNow = async (item: IDataForCreateAppointment) => {
-    // Implement direct booking logic
+    if (!currentUser) return;
     mutate({
       clientId: currentUser.id,
       serviceId: serviceId,
@@ -135,7 +146,7 @@ export default function ServiceCardCarouusel({
   };
 
   function appointmentService() {
-    if (currentUser.role !== "CLIENT") {
+    if (!currentUser || currentUser.role !== "CLIENT") {
       notifications.show({
         title: "Acesso negado",
         message:

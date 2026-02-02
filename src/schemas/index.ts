@@ -16,7 +16,7 @@ const createAccountSchema = zod
       .string()
       .regex(
         EMPLOYEE_CODE_REGEX,
-        "codigo inválido, deve conter 8 digitos um numero e uma letra e um caracter especial (@$!%*#?&)."
+        "codigo inválido, deve conter 8 digitos um numero e uma letra e um caracter especial (@$!%*#?&).",
       )
       .optional()
       .nullable(),
@@ -69,7 +69,7 @@ const categoriaSchema = zod.object({
     .array(
       serviceSchema.omit({ categoryId: true, photoUrl: true }).extend({
         photo: zod.string().optional(),
-      })
+      }),
     )
     .min(4, "Deve ter pelo menos 4 serviços"),
 });
@@ -118,7 +118,7 @@ const codeValidationToEmployeeSchema = zod.object({
     .string()
     .regex(
       EMPLOYEE_CODE_REGEX,
-      "codigo inválido, deve conter 8 digitos um numero e uma letra e um caracter especial (@$!%*#?&)."
+      "codigo inválido, deve conter 8 digitos um numero e uma letra e um caracter especial (@$!%*#?&).",
     ),
   description: zod
     .string()
@@ -127,8 +127,8 @@ const codeValidationToEmployeeSchema = zod.object({
 
 const AppointmentSchema = zod.object({
   id: zod.string(),
-  clientName: zod.string().min(1, "Client name is required"),
-  employeeName: zod.string().min(1, "Employee name is required"),
+  clientName: zod.string().min(1, "Nome do cliente é obrigatório"),
+  employeeName: zod.string().min(1, "Nome do funcionário é obrigatório"),
   date: zod.date(),
   time: zod.string(),
   status: zod.string() as zod.ZodType<TStatus>,

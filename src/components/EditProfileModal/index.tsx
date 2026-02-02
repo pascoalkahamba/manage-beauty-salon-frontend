@@ -15,7 +15,7 @@ import {
 } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
 import { IconUpload } from "@tabler/icons-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { ICurrentUser, IModalAtom } from "@/interfaces";
 import {
   getAllAcademicLevels,
@@ -45,16 +45,21 @@ export default function EditProfileModal({
   isPending,
 }: EditProfileModalProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    initialData.photoUrl || null
+    initialData.photoUrl || null,
   );
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
 
   const { data: serviceData, isError: serviceIsError } = useQuery({
     queryKey: ["getAllServices"],
     queryFn: getAllServices,
   });
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
   const {
     data: categoryData,
 
@@ -140,7 +145,7 @@ export default function EditProfileModal({
       size="lg"
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack spacing="md">
+        <Stack gap="md">
           <Center>
             <Avatar src={previewUrl} size={120} radius="md" className="mb-4" />
           </Center>
@@ -150,7 +155,7 @@ export default function EditProfileModal({
             name="file"
             itemType="file"
             accept="image/png,image/jpeg,image/jpg"
-            icon={<IconUpload size={16} />}
+            leftSection={<IconUpload size={16} />}
             onChange={handleFileChange}
           />
           <TextInput
@@ -188,7 +193,7 @@ export default function EditProfileModal({
             radius="md"
             error={form.errors.password}
           />
-          {currentUser.role === "CLIENT" && (
+          {currentUser?.role === "CLIENT" && (
             <MultiSelect
               label="Escolhe suas categorias"
               data={allCategories?.map((category) => ({
@@ -206,7 +211,7 @@ export default function EditProfileModal({
               searchable
             />
           )}
-          {currentUser.role !== "CLIENT" && (
+          {currentUser?.role !== "CLIENT" && (
             <MultiSelect
               label="Escolhe seus serviços"
               data={allServices?.map((service) => ({
@@ -224,7 +229,7 @@ export default function EditProfileModal({
               required
             />
           )}{" "}
-          {currentUser.role !== "CLIENT" && (
+          {currentUser?.role !== "CLIENT" && (
             <Select
               label="Escolhe seu nível acadêmico"
               placeholder="Escolhe seu nível acadêmico"

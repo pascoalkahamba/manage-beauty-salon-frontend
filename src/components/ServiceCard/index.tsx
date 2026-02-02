@@ -21,6 +21,7 @@ import { creatAppointment, createCart } from "@/servers";
 import { notifications } from "@mantine/notifications";
 import useTimeConverter from "@/hooks/useTimeConverter";
 import { useFormatCurrency } from "@/hooks/useFormatCurrency";
+import { useEffect, useState } from "react";
 
 interface ServiceCardProps {
   description: string;
@@ -43,9 +44,15 @@ export default function ServiceCard({
   serviceId,
   duration,
 }: ServiceCardProps) {
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
+
   const service: IService = {
     name,
     description,
@@ -71,9 +78,11 @@ export default function ServiceCard({
         color: "green",
         position: "top-right",
       });
-      queryClient.invalidateQueries({
-        queryKey: [`${currentUser.id}-${currentUser.role}-getOneUser`],
-      });
+      if (currentUser) {
+        queryClient.invalidateQueries({
+          queryKey: [`${currentUser.id}-${currentUser.role}-getOneUser`],
+        });
+      }
     },
     onError: () => {
       notifications.show({
@@ -113,16 +122,18 @@ export default function ServiceCard({
   const handleAddToCart = async (item: IDataForCreateAppointment) => {
     await handleBookNow(item);
 
-    mutateCreateCart({
-      clientId: currentUser.id,
-      appointmentId: appointmentData?.id as number,
-    });
+    if (currentUser && appointmentData) {
+      mutateCreateCart({
+        clientId: currentUser.id,
+        appointmentId: appointmentData.id,
+      });
+    }
   };
 
   const setOpened = useSetAtom(modalAtom);
 
   const handleBookNow = async (item: IDataForCreateAppointment) => {
-    // Implement direct booking logic
+    if (!currentUser) return;
     mutate({
       clientId: currentUser.id,
       serviceId: currentService?.id as number,
@@ -135,7 +146,7 @@ export default function ServiceCard({
   };
 
   function appointmentService() {
-    if (currentUser.role !== "CLIENT") {
+    if (!currentUser || currentUser.role !== "CLIENT") {
       notifications.show({
         title: "Acesso negado",
         message:

@@ -20,7 +20,6 @@ import {
   ICodeValidationToEmployee,
   ICreateAdemicLevel,
   ICreateCodeValidationToEmployee,
-  ICurrentUser,
 } from "@/interfaces";
 import {
   createAcademicLevel,
@@ -47,10 +46,6 @@ export default function AcademicLevelAndCodeToCreateEmployeeModal() {
     selectedCodeValidationToEmployee,
     setSelectedCodeValidationToEmployee,
   ] = useState<ICodeValidationToEmployee | null>(null);
-
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
 
   const { data: academicLevelData } = useQuery({
     queryKey: ["getAllAcademicLevels"],
@@ -225,7 +220,7 @@ export default function AcademicLevelAndCodeToCreateEmployeeModal() {
     validate: zodResolver(
       opened.type === "listOfAcademicLevel"
         ? academicLevelSchema
-        : codeValidationToEmployeeSchema
+        : codeValidationToEmployeeSchema,
     ),
   });
 
@@ -267,7 +262,7 @@ export default function AcademicLevelAndCodeToCreateEmployeeModal() {
   };
 
   const handleEdit = (
-    levelOrCode: IAcademicLevel | ICodeValidationToEmployee
+    levelOrCode: IAcademicLevel | ICodeValidationToEmployee,
   ) => {
     if (opened.type === "listOfAcademicLevel") {
       setSelectedAcademicLevel(levelOrCode as IAcademicLevel);
@@ -279,7 +274,7 @@ export default function AcademicLevelAndCodeToCreateEmployeeModal() {
 
     if (opened.type === "listOfCodeToCreateEmployee") {
       setSelectedCodeValidationToEmployee(
-        levelOrCode as ICodeValidationToEmployee
+        levelOrCode as ICodeValidationToEmployee,
       );
       form.setValues({
         name: levelOrCode.characters,

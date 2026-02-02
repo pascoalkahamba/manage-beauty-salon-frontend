@@ -28,6 +28,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateStatusAppointment } from "@/servers";
 import { useAtomValue } from "jotai";
 import { modalAtom } from "@/storage/atom";
+import { useEffect, useState } from "react";
 
 interface AppointmentModalProps {
   onClose: () => void;
@@ -39,9 +40,15 @@ export default function AppointmentModal({
   appointment,
 }: AppointmentModalProps) {
   const { convertMinutes } = useTimeConverter();
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
+
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationFn: (appointment: IUpdateAppointmentStatus) =>
@@ -54,12 +61,14 @@ export default function AppointmentModal({
         color: "green",
         position: "top-right",
       });
-      queryClient.invalidateQueries({
-        queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [`${currentUser.role}-${currentUser.id}-getAppointments`],
-      });
+      if (currentUser) {
+        queryClient.invalidateQueries({
+          queryKey: [`${currentUser.role}-${currentUser.id}-getOneUser`],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [`${currentUser.role}-${currentUser.id}-getAppointments`],
+        });
+      }
     },
 
     onError: () => {
@@ -90,7 +99,7 @@ export default function AppointmentModal({
 
   const handleStatusChange = async (status: TStatus) => {
     const message = `O estato do agendamento foi alterado para ${showStatusInPortuguese(
-      status
+      status,
     )} entre em contato com o funcionário para mais informações, nome do funcionário: ${
       appointment.employee.username
     } contato: ${appointment.employee.cellphone}`;
@@ -118,8 +127,8 @@ export default function AppointmentModal({
       title="Detalhes do agendamento"
       size="md"
     >
-      <Stack spacing="md">
-        <Group position="apart">
+      <Stack gap="md">
+        <Group justify="apart">
           <Text size="sm" weight={500}>
             Estato:
           </Text>
@@ -173,7 +182,7 @@ export default function AppointmentModal({
           disabled={isPending}
         />
 
-        <Group position="right" mt="md">
+        <Group justify="right" mt="md">
           <Button variant="subtle" onClick={onClose}>
             Fechar
           </Button>

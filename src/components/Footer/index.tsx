@@ -10,14 +10,24 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllCategories } from "@/servers";
 import { ICurrentUser } from "@/interfaces";
 import ActionToggle from "@/components/ActionToggle";
+import { useEffect, useState } from "react";
 
 export default function Footer() {
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
+
   const { data: allCategories } = useQuery({
-    queryKey: [`${currentUser?.id}-allCategories`],
+    queryKey: currentUser
+      ? [`${currentUser.id}-allCategories`]
+      : ["guest-allCategories"],
     queryFn: getAllCategories,
+    enabled: !!currentUser,
   });
 
   const items = allCategories?.map((category) => (

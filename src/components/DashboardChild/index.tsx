@@ -4,20 +4,42 @@ import { ICurrentUser } from "@/interfaces";
 import { getAllServices } from "@/servers";
 import { useQuery } from "@tanstack/react-query";
 import SkeletonComponent from "@/components/Skeleton";
+import { useEffect, useState } from "react";
 
 export default function DashboardChild() {
-  const currentUser = JSON.parse(
-    localStorage.getItem("userInfo") as string
-  ) as ICurrentUser;
+  const [currentUser, setCurrentUser] = useState<ICurrentUser | null>(null);
+
+  useEffect(() => {
+    // Only access localStorage on the client side
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      setCurrentUser(JSON.parse(userInfo) as ICurrentUser);
+    }
+  }, []);
 
   const {
     data: allServices,
     isPending,
     error,
   } = useQuery({
-    queryKey: [`${currentUser.id}-${currentUser.role}-allServices`],
+    queryKey: currentUser
+      ? [`${currentUser.id}-${currentUser.role}-allServices`]
+      : ["guest-allServices"],
     queryFn: getAllServices,
+    enabled: !!currentUser,
   });
+
+  // Show loading while checking localStorage
+  if (!currentUser) {
+    return (
+      <SkeletonComponent
+        isPending={true}
+        skeletons={[3, 2, 5]}
+        width={200}
+        height={300}
+      />
+    );
+  }
 
   if (isPending)
     return (
