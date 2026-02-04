@@ -118,7 +118,7 @@ export default function SignIn(props: PaperProps) {
             href="/forgotPassword"
             className=" mt-[-10px] text-blue-500 hover:underline"
           >
-            <span className="text-xs talic">Esqueceu a senha</span>
+            {/* <span className="text-xs talic">Esqueceu a senha</span> */}
           </Link>
         </Stack>
 
